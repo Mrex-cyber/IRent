@@ -16,6 +16,7 @@ backend/Homestead.json
 backend/Homestead.yaml
 
 # Frontend (Vue/Vite)
+frontend/.env
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
