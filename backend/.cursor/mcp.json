@@ -1,0 +1,16 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "cmd",
+            "args": [
+                "/c",
+                "cd",
+                "C:\\Users\\rabin\\ir\\backend",
+                "&&",
+                "php",
+                "artisan",
+                "boost:mcp"
+            ]
+        }
+    }
+}
