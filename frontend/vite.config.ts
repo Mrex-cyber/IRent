@@ -66,15 +66,9 @@ export default defineConfig({
     port: 3001,
     proxy: {
       '/api': {
-        target: 'http://localhost:23440',
+        target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
-        followRedirects: false
-      },
-      '/signalr': {
-        target: 'http://localhost:23440',
-        changeOrigin: true,
-        ws: true
       }
     }
   },

@@ -39,19 +39,42 @@ export const useAuthStore = defineStore('auth', () => {
   const register = async (userData: RegisterData) => {
     isLoading.value = true
     try {
+      // Prepare payload with passwordConfirmation
+      const payload = {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        password: userData.password,
+        passwordConfirmation: (userData as any).passwordConfirmation || userData.password,
+        role: userData.role
+      }
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(userData)
+        body: JSON.stringify(payload)
       })
 
-      if (!response.ok) {
-        throw new Error('Registration failed')
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text()
+        console.error('Non-JSON response:', text.substring(0, 200))
+        throw new Error('Server returned an error. Please check the console.')
       }
 
       const data = await response.json()
+
+      if (!response.ok) {
+        // Handle validation errors
+        if (data.errors) {
+          throw new Error(JSON.stringify(data.errors))
+        }
+        throw new Error(data.message || 'Registration failed')
+      }
+
       token.value = data.token
       user.value = data.user
       localStorage.setItem('token', data.token)

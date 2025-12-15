@@ -35,6 +35,14 @@
         :error-messages="errors.password"
       ></v-text-field>
 
+      <v-text-field
+        v-model="form.passwordConfirmation"
+        label="Confirm Password"
+        type="password"
+        required
+        :error-messages="errors.passwordConfirmation"
+      ></v-text-field>
+
       <v-select
         v-model="form.role"
         label="Role"
@@ -65,6 +73,7 @@ const form = reactive({
   lastName: '',
   email: '',
   password: '',
+  passwordConfirmation: '',
   role: 'Tenant'
 })
 
@@ -73,6 +82,7 @@ const errors = reactive({
   lastName: '',
   email: '',
   password: '',
+  passwordConfirmation: '',
   role: ''
 })
 
@@ -94,8 +104,26 @@ const handleRegister = async () => {
 
     await authStore.register(form)
     router.push('/dashboard')
-  } catch (error) {
+  } catch (error: any) {
     console.error('Registration failed:', error)
+    
+    // Handle validation errors
+    if (error.message) {
+      try {
+        const validationErrors = JSON.parse(error.message)
+        Object.keys(validationErrors).forEach((key) => {
+          const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
+          if (errors.hasOwnProperty(camelKey)) {
+            errors[camelKey as keyof typeof errors] = Array.isArray(validationErrors[key])
+              ? validationErrors[key].join(', ')
+              : validationErrors[key]
+          }
+        })
+      } catch {
+        // If not JSON, show general error
+        errors.password = error.message || 'Registration failed. Please try again.'
+      }
+    }
   } finally {
     isLoading.value = false
   }
