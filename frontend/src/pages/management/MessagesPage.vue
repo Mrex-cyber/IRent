@@ -25,7 +25,16 @@
               <span>Create Group Chat</span>
             </button>
             <button class="action-button primary" @click="openBroadcastDialog">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
@@ -35,25 +44,7 @@
         </div>
 
         <div class="search-filter-section">
-          <div class="search-bar">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search announcements..."
-              @input="handleSearch"
-            />
-          </div>
+          <SearchField v-model="searchQuery" placeholder="Search people" />
 
           <div class="filter-buttons">
             <button
@@ -149,12 +140,20 @@
                   :class="['conversation-message-wrapper', { sent: msg.sent }]"
                 >
                   <div v-if="!msg.sent" class="conversation-message incoming">
-                    <div class="message-bubble incoming-bubble">
-                      {{ msg.content }}
+                    <div class="message-avatar-small incoming-avatar">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
                     </div>
-                    <div class="message-meta">
-                      <span class="message-role">{{ selectedMessage.senderRole }}</span>
-                      <span class="message-date">{{ formatMessageDate(msg.timestamp) }}</span>
+                    <div class="message-content-wrapper">
+                      <div class="message-bubble incoming-bubble">
+                        {{ msg.content }}
+                      </div>
+                      <div class="message-meta">
+                        <span class="message-role">{{ selectedMessage.senderRole }}</span>
+                        <span class="message-date">{{ formatMessageDate(msg.timestamp) }}</span>
+                      </div>
                     </div>
                   </div>
                   <div v-else class="conversation-message sent">
@@ -247,6 +246,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/store/auth'
+import SearchField from '@/components/SearchField.vue'
 
 interface Message {
   id: number
@@ -277,7 +277,14 @@ const replyText = ref('')
 const showCreateGroupDialog = ref(false)
 const showBroadcastDialog = ref(false)
 
-const filters = ['All', 'Item', 'Item', 'Item', 'Item', 'Item', 'Item']
+const filters = [
+  'All',
+  'Suggestions and complaints',
+  'Legal Matter',
+  'Maintenance',
+  'Financial',
+  'General'
+]
 
 const filteredMessages = computed(() => {
   let filtered = messages.value
@@ -574,12 +581,7 @@ onMounted(() => {
 }
 
 .action-button.primary {
-  background: linear-gradient(
-    to bottom,
-    #ffffff 0%,
-    rgba(185, 208, 255, 0.925) 50%,
-    rgba(62, 126, 255, 0.8) 100%
-  );
+  background-color: #204ef6;
   color: #ffffff;
   border: none;
 }
@@ -593,34 +595,6 @@ onMounted(() => {
   padding: 1.5rem;
   border-radius: 0.75rem;
   margin-bottom: 1.5rem;
-}
-
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background-color: #f5f5f5;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.search-bar svg {
-  color: #757575;
-  flex-shrink: 0;
-}
-
-.search-bar input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.search-bar input::placeholder {
-  color: #9e9e9e;
 }
 
 .filter-buttons {
@@ -930,6 +904,8 @@ onMounted(() => {
 
 .conversation-message.incoming {
   align-items: flex-start;
+  flex-direction: row;
+  gap: 0.5rem;
 }
 
 .conversation-message.sent {
@@ -995,6 +971,19 @@ onMounted(() => {
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 600;
+  flex-shrink: 0;
+}
+
+.message-avatar-small.incoming-avatar {
+  background-color: #e0e0e0;
+  color: #757575;
+}
+
+.message-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
   flex-shrink: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }

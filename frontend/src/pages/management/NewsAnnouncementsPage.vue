@@ -24,25 +24,7 @@
         </div>
 
         <div class="search-filter-section">
-          <div class="search-bar">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search announcements..."
-              @input="handleSearch"
-            />
-          </div>
+          <SearchField v-model="searchQuery" placeholder="Search announcements..." />
 
           <div class="filter-buttons">
             <button
@@ -535,35 +517,6 @@ onMounted(() => {
   padding: 1.5rem;
   border-radius: 0.75rem;
   margin-bottom: 1.5rem;
-}
-
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background-color: #ffffff;
-  border: 1.67px solid #99a1af;
-  border-radius: 20px;
-  margin-bottom: 1rem;
-}
-
-.search-bar svg {
-  color: #757575;
-  flex-shrink: 0;
-}
-
-.search-bar input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.search-bar input::placeholder {
-  color: #9e9e9e;
 }
 
 .filter-buttons {
