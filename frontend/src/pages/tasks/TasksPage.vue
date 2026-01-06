@@ -166,6 +166,42 @@ import TopNavbar from '@/components/TopNavbar.vue'
 
 const authStore = useAuthStore()
 
+const mockTasks = [
+  {
+    id: '1',
+    title: 'Fix leaking faucet',
+    description: 'Kitchen faucet is leaking in apartment 2B',
+    status: 'Pending',
+    priority: 'High',
+    apartmentId: '1',
+    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: '2',
+    title: 'Replace lightbulb',
+    description: 'Hallway light needs replacement',
+    status: 'InProgress',
+    priority: 'Medium',
+    apartmentId: '2',
+    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: '3',
+    title: 'Paint common area',
+    description: 'Repaint the lobby walls',
+    status: 'Completed',
+    priority: 'Low',
+    apartmentId: '3',
+    dueDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+  }
+]
+
+const mockApartments = [
+  { id: '1', title: 'Modern 2BR Apartment' },
+  { id: '2', title: 'Spacious 3BR Loft' },
+  { id: '3', title: 'Cozy 1BR Studio' }
+]
+
 const tasks = ref([])
 const apartments = ref([])
 const showFilters = ref(false)
@@ -245,25 +281,13 @@ const viewTask = (task: any) => {
 }
 
 const fetchTasks = async () => {
-  try {
-    const response = await fetch('/api/tasks')
-    if (response.ok) {
-      tasks.value = await response.json()
-    }
-  } catch (error) {
-    console.error('Fetch tasks error:', error)
-  }
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  tasks.value = [...mockTasks]
 }
 
 const fetchApartments = async () => {
-  try {
-    const response = await fetch('/api/apartments')
-    if (response.ok) {
-      apartments.value = await response.json()
-    }
-  } catch (error) {
-    console.error('Fetch apartments error:', error)
-  }
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  apartments.value = [...mockApartments]
 }
 
 onMounted(() => {

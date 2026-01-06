@@ -3,11 +3,28 @@ import { ref, computed } from 'vue'
 import type { User, LoginCredentials, RegisterData } from '@/types/auth'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<User | null>(null)
-  const token = ref<string | null>(localStorage.getItem('token'))
+  const storedToken = localStorage.getItem('token')
+  const defaultUser: User = {
+    id: '1',
+    email: 'admin@example.com',
+    firstName: 'Admin',
+    lastName: 'User',
+    role: 'Admin',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+
+  const user = ref<User | null>(storedToken ? defaultUser : null)
+  const token = ref<string | null>(storedToken || 'fake_token_for_testing')
   const isLoading = ref(false)
 
+  if (!storedToken) {
+    localStorage.setItem('token', 'fake_token_for_testing')
+    user.value = defaultUser
+  }
+
   const isAuthenticated = computed(() => !!token.value && !!user.value)
+  const isAdmin = computed(() => user.value?.role === 'Admin')
 
   const login = async (credentials: LoginCredentials) => {
     isLoading.value = true
@@ -93,6 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     isLoading,
     isAuthenticated,
+    isAdmin,
     login,
     register,
     logout,

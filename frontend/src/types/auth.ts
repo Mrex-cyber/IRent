@@ -3,7 +3,7 @@ export interface User {
   email: string
   firstName: string
   lastName: string
-  role: 'Tenant' | 'ApartmentOwner' | 'OSBBRepresentative' | 'Realtor'
+  role: 'Tenant' | 'ApartmentOwner' | 'OSBBRepresentative' | 'Realtor' | 'Admin'
   avatar?: string
   createdAt: string
   updatedAt: string
@@ -19,7 +19,7 @@ export interface RegisterData {
   password: string
   firstName: string
   lastName: string
-  role: 'Tenant' | 'ApartmentOwner' | 'OSBBRepresentative' | 'Realtor'
+  role: 'Tenant' | 'ApartmentOwner' | 'OSBBRepresentative' | 'Realtor' | 'Admin'
 }
 
 export interface AuthResponse {

@@ -106,7 +106,7 @@
                   cy="90"
                   r="80"
                   fill="none"
-                  stroke="#64b5f6"
+                  stroke="#B9D0FF"
                   stroke-width="30"
                   stroke-dasharray="94.7"
                   stroke-dashoffset="47.35"
@@ -117,7 +117,7 @@
                   cy="90"
                   r="80"
                   fill="none"
-                  stroke="#42a5f5"
+                  stroke="#3E7EFF"
                   stroke-width="30"
                   stroke-dasharray="94.7"
                   stroke-dashoffset="75.76"
@@ -554,11 +554,11 @@ const contactMember = (member: any) => {
 }
 
 .legend-circle.realtors {
-  background-color: #64b5f6;
+  background-color: #b9d0ff;
 }
 
 .legend-circle.cleaning {
-  background-color: #42a5f5;
+  background-color: #3e7eff;
 }
 
 .legend-circle.technicians {
