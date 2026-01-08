@@ -40,6 +40,8 @@
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
                   >
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
@@ -83,136 +85,149 @@
 
           <div class="panel right-panel">
             <div v-if="selectedApartment" class="apartment-details-view">
-              <div class="apartment-header">
-                <h3 class="apartment-title">Apartment {{ selectedApartment.number }}</h3>
-                <span class="apartment-floor-badge">Floor {{ selectedApartment.floor }}</span>
-              </div>
-
-              <div class="info-section">
-                <div class="info-section-header">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                  <h4 class="info-section-title">Owner</h4>
-                </div>
-                <div class="info-section-content">
-                  <div class="owner-name">{{ selectedApartment.ownerName || 'John Smith' }}</div>
-                  <div class="owner-contact">
-                    <span>{{ selectedApartment.ownerPhone || '+38 099 999 99 99' }}</span>
-                  </div>
-                  <div class="owner-contact">
-                    <span>{{ selectedApartment.ownerEmail || 'owner@example.com' }}</span>
-                  </div>
+              <div class="info-section-card apartment-header-card">
+                <div class="apartment-header">
+                  <h3 class="apartment-title">Apartment {{ selectedApartment.number }}</h3>
+                  <span class="apartment-floor-badge">Floor {{ selectedApartment.floor }}</span>
                 </div>
               </div>
 
-              <div class="info-section">
-                <div class="info-section-header">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
-                    />
-                  </svg>
-                  <h4 class="info-section-title">Requests</h4>
-                </div>
-                <div class="requests-stats">
-                  <div class="stat-box total">
-                    <div class="stat-value">{{ selectedApartment.requestsTotal || 12 }}</div>
-                    <div class="stat-label">Total</div>
+              <div class="info-section-card">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="info-section-avatar"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <div class="info-section-right">
+                  <div class="info-section-header">
+                    <h4 class="info-section-title">Owner</h4>
                   </div>
-                  <div class="stat-box pending">
-                    <div class="stat-value">{{ selectedApartment.requestsPending || 3 }}</div>
-                    <div class="stat-label">Pending</div>
-                  </div>
-                  <div class="stat-box resolved">
-                    <div class="stat-value">{{ selectedApartment.requestsResolved || 1 }}</div>
-                    <div class="stat-label">Resolved</div>
+                  <div class="info-section-content">
+                    <div class="owner-name">{{ selectedApartment.ownerName || 'John Smith' }}</div>
+                    <div class="owner-contact">
+                      <span>{{ selectedApartment.ownerPhone || '+38 099 999 99 99' }}</span>
+                    </div>
+                    <div class="owner-contact">
+                      <span>{{ selectedApartment.ownerEmail || 'owner@example.com' }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div class="info-section">
-                <div class="info-section-header">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                  </svg>
-                  <h4 class="info-section-title">Utility Meters</h4>
-                </div>
-                <div class="utility-meters">
-                  <div class="utility-item">
-                    <span class="utility-label">Water:</span>
-                    <span class="utility-value">{{ selectedApartment.waterMeter || '2.3' }}m³</span>
+              <div class="info-section-card">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="info-section-avatar"
+                >
+                  <path
+                    d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+                  />
+                </svg>
+                <div class="info-section-right">
+                  <div class="info-section-header">
+                    <h4 class="info-section-title">Requests</h4>
                   </div>
-                  <div class="utility-item">
-                    <span class="utility-label">Electricity:</span>
-                    <span class="utility-value"
-                      >{{ selectedApartment.electricityMeter || '224.4' }} kWh</span
-                    >
-                  </div>
-                  <div class="utility-item">
-                    <span class="utility-label">Gas:</span>
-                    <span class="utility-value">{{ selectedApartment.gasMeter || '7.5' }}m³</span>
+                  <div class="requests-stats">
+                    <div class="stat-box total">
+                      <div class="stat-value">{{ selectedApartment.requestsTotal || 12 }}</div>
+                      <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-box pending">
+                      <div class="stat-value">{{ selectedApartment.requestsPending || 3 }}</div>
+                      <div class="stat-label">Pending</div>
+                    </div>
+                    <div class="stat-box resolved">
+                      <div class="stat-value">{{ selectedApartment.requestsResolved || 1 }}</div>
+                      <div class="stat-label">Resolved</div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div class="info-section">
-                <div class="info-section-header">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <line x1="12" y1="1" x2="12" y2="23" />
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                  <h4 class="info-section-title">Billing Status</h4>
-                </div>
-                <div class="billing-content">
-                  <div class="billing-avatar">
-                    <span>R</span>
+              <div class="info-section-card">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="info-section-avatar"
+                >
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+                <div class="info-section-right">
+                  <div class="info-section-header">
+                    <h4 class="info-section-title">Utility Meters</h4>
                   </div>
-                  <div class="billing-details">
-                    <div class="billing-item">
-                      <span class="billing-label">Amount:</span>
-                      <span class="billing-value"
-                        >${{ selectedApartment.billingAmount || '101' }}</span
+                  <div class="utility-meters">
+                    <div class="utility-item">
+                      <span class="utility-label">Water:</span>
+                      <span class="utility-value"
+                        >{{ selectedApartment.waterMeter || '2.3' }}m³</span
                       >
                     </div>
-                    <div class="billing-item">
-                      <span class="billing-label">Due Date:</span>
-                      <span class="billing-value">{{
-                        selectedApartment.dueDate || '2024-12-01'
-                      }}</span>
+                    <div class="utility-item">
+                      <span class="utility-label">Electricity:</span>
+                      <span class="utility-value"
+                        >{{ selectedApartment.electricityMeter || '224.4' }} kWh</span
+                      >
+                    </div>
+                    <div class="utility-item">
+                      <span class="utility-label">Gas:</span>
+                      <span class="utility-value">{{ selectedApartment.gasMeter || '7.5' }}m³</span>
                     </div>
                   </div>
                 </div>
-                <button class="paid-button">Paid</button>
+              </div>
+
+              <div class="info-section-card">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="info-section-avatar"
+                >
+                  <line x1="12" y1="1" x2="12" y2="23" />
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+                <div class="info-section-right">
+                  <div class="info-section-header">
+                    <h4 class="info-section-title">Billing Status</h4>
+                  </div>
+                  <div class="billing-content">
+                    <div class="billing-details">
+                      <div class="billing-item">
+                        <span class="billing-label">Amount:</span>
+                        <span class="billing-value"
+                          >${{ selectedApartment.billingAmount || '101' }}</span
+                        >
+                      </div>
+                      <div class="billing-item">
+                        <span class="billing-label">Due Date:</span>
+                        <span class="billing-value">{{
+                          selectedApartment.dueDate || '2024-12-01'
+                        }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span class="paid-tag">Paid</span>
+                </div>
               </div>
             </div>
             <div v-else class="empty-state">
@@ -649,7 +664,7 @@ onMounted(() => {
   border: 0.125rem solid #204ef6;
   background-color: #ffffff;
   color: #204ef6;
-  border-radius: 1.5rem;
+  border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -682,6 +697,11 @@ onMounted(() => {
   flex-direction: column;
 }
 
+.right-panel {
+  background-color: #f5f5f5;
+  padding: 0;
+}
+
 .panel-title {
   font-size: 1.125rem;
   font-weight: 700;
@@ -690,12 +710,20 @@ onMounted(() => {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.entrances-list,
+.entrances-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+}
+
 .apartments-grid {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: 1rem 1rem;
+  row-gap: 0.75rem;
   overflow-y: auto;
 }
 
@@ -704,9 +732,10 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  border-radius: 0.5rem;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   border: 0.0625rem solid transparent;
 }
 
@@ -715,8 +744,13 @@ onMounted(() => {
 }
 
 .entrance-item.active {
-  background-color: #e3f2fd;
-  border-color: #204ef6;
+  background: linear-gradient(
+    to bottom,
+    #ffffff 0%,
+    rgba(185, 208, 255, 0.925) 50%,
+    rgba(62, 126, 255, 0.8) 100%
+  );
+  border-color: transparent;
 }
 
 .apartment-card {
@@ -729,6 +763,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  height: fit-content;
 }
 
 .apartment-card:hover {
@@ -803,16 +838,15 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
   overflow-y: auto;
+  padding: 1rem;
 }
 
 .apartment-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 1rem;
-  border-bottom: 0.0625rem solid #e0e0e0;
 }
 
 .apartment-title {
@@ -833,7 +867,36 @@ onMounted(() => {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+.info-section-card {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.1);
+}
+
+.apartment-header-card {
+  padding: 1.25rem;
+}
+
 .info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-section-avatar {
+  color: #757575;
+  flex-shrink: 0;
+  height: 1.5rem;
+  width: 1.5rem;
+  margin-top: 0;
+}
+
+.info-section-right {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -841,13 +904,8 @@ onMounted(() => {
 
 .info-section-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
-}
-
-.info-section-header svg {
-  color: #757575;
-  flex-shrink: 0;
 }
 
 .info-section-title {
@@ -855,6 +913,7 @@ onMounted(() => {
   font-weight: 600;
   color: #212121;
   margin: 0;
+  line-height: 1.5rem;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -942,25 +1001,7 @@ onMounted(() => {
 }
 
 .billing-content {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
   margin-bottom: 1rem;
-}
-
-.billing-avatar {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background-color: #424242;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 1rem;
-  flex-shrink: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .billing-details {
@@ -988,22 +1029,17 @@ onMounted(() => {
   color: #212121;
 }
 
-.paid-button {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #4caf50;
-  color: #ffffff;
-  border: none;
+.paid-tag {
+  padding: 0.5rem 1rem;
+  background-color: #dcfce7;
+  color: #166534;
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.paid-button:hover {
-  background-color: #45a049;
+  display: inline-block;
+  width: fit-content;
+  align-self: flex-start;
 }
 
 .detail-section {
