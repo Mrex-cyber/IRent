@@ -1,24 +1,15 @@
 <template>
-  <v-container fluid class="members-container-fluid pa-0">
-    <div class="members-page">
-      <div class="members-container">
-        <div class="top-header">
-          <button class="grid-icon-button" @click="$router.push('/menu')">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" />
-              <rect x="14" y="14" width="7" height="7" rx="1" />
-            </svg>
-          </button>
-          <button class="home-link-button" @click="$router.push('/menu')">
+  <v-container fluid class="pa-0">
+    <div class="members-directory-page">
+      <div class="page-header">
+        <h1 class="page-title">Members Directory</h1>
+        <p class="page-subtitle">View and manage all residents, tenants, and staff members</p>
+      </div>
+
+      <div class="search-section">
+        <div class="search-container">
+          <SearchField v-model="searchQuery" placeholder="Search members by name or email..." />
+          <button class="filter-icon-button">
             <svg
               width="20"
               height="20"
@@ -26,170 +17,68 @@
               fill="none"
               stroke="currentColor"
               stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
             >
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
             </svg>
-            <span>Home Link</span>
           </button>
-          <div class="top-right-icons">
-            <button class="top-icon-button">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              >
-                <line x1="21" y1="6" x2="7" y2="6" />
-                <line x1="21" y1="12" x2="7" y2="12" />
-                <line x1="21" y1="18" x2="7" y2="18" />
-                <circle cx="4" cy="6" r="2" />
-                <circle cx="4" cy="12" r="2" />
-                <circle cx="4" cy="18" r="2" />
-              </svg>
-            </button>
-            <button class="top-icon-button">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="M21 21l-4.35-4.35" />
-              </svg>
-            </button>
-            <button class="top-icon-button" @click="showCalendar = true">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-            </button>
-          </div>
         </div>
+        <div class="filter-buttons">
+          <button
+            v-for="filter in filters"
+            :key="filter"
+            :class="['filter-button', { active: activeFilter === filter }]"
+            @click="activeFilter = filter"
+          >
+            {{ filter }}
+          </button>
+        </div>
+      </div>
 
-        <div class="members-overview-section">
-          <h3 class="section-title">Condo members</h3>
-          <div class="members-chart-container">
-            <div class="donut-chart">
-              <svg width="180" height="180" viewBox="0 0 180 180">
-                <circle cx="90" cy="90" r="80" fill="none" stroke="#e0e0e0" stroke-width="30" />
-                <circle
-                  cx="90"
-                  cy="90"
-                  r="80"
-                  fill="none"
-                  stroke="#90caf9"
-                  stroke-width="30"
-                  stroke-dasharray="94.7"
-                  stroke-dashoffset="0"
-                  transform="rotate(-90 90 90)"
-                />
-                <circle
-                  cx="90"
-                  cy="90"
-                  r="80"
-                  fill="none"
-                  stroke="#B9D0FF"
-                  stroke-width="30"
-                  stroke-dasharray="94.7"
-                  stroke-dashoffset="47.35"
-                  transform="rotate(-90 90 90)"
-                />
-                <circle
-                  cx="90"
-                  cy="90"
-                  r="80"
-                  fill="none"
-                  stroke="#3E7EFF"
-                  stroke-width="30"
-                  stroke-dasharray="94.7"
-                  stroke-dashoffset="75.76"
-                  transform="rotate(-90 90 90)"
-                />
-                <circle
-                  cx="90"
-                  cy="90"
-                  r="80"
-                  fill="none"
-                  stroke="#ba68c8"
-                  stroke-width="30"
-                  stroke-dasharray="94.7"
-                  stroke-dashoffset="100.24"
-                  transform="rotate(-90 90 90)"
-                />
-              </svg>
-              <div class="chart-center">
-                <div class="chart-text">26</div>
-                <div class="chart-label">members</div>
+      <div class="content-layout">
+        <div ref="leftPanel" class="left-panel">
+          <h2 class="panel-title">All Members ({{ filteredMembers.length }})</h2>
+          <div class="members-list">
+            <div
+              v-for="member in filteredMembers"
+              :key="member.id"
+              :class="['member-item', { active: selectedMember?.id === member.id }]"
+              @click="selectMember(member)"
+            >
+              <div class="member-avatar-small">
+                <span>{{ getInitials(member.name) }}</span>
+              </div>
+              <div class="member-info-small">
+                <div class="member-name-small">{{ member.name }}</div>
+                <div class="member-email-small">{{ member.email }}</div>
+                <div class="member-tags-small">
+                  <span :class="['role-tag', getRoleTagClass(member.role)]">{{ member.role }}</span>
+                  <span v-if="member.apartment" class="apartment-tag">{{ member.apartment }}</span>
+                </div>
               </div>
             </div>
-            <button class="check-button">
-              <span>Check</span>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-          </div>
-
-          <div class="members-legend">
-            <div class="legend-item">
-              <div class="legend-circle managers"></div>
-              <span>Managers</span>
-              <span class="legend-count">4</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-circle realtors"></div>
-              <span>Realtors</span>
-              <span class="legend-count">3</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-circle cleaning"></div>
-              <span>Cleaning</span>
-              <span class="legend-count">12</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-circle technicians"></div>
-              <span>Technicians</span>
-              <span class="legend-count">7</span>
-            </div>
           </div>
         </div>
 
-        <div class="member-cards-section">
-          <div v-for="(member, index) in members" :key="member.id" class="member-card">
-            <div class="member-avatar">
-              <img :src="member.avatar || '/placeholder-avatar.jpg'" :alt="member.name" />
-            </div>
-            <div class="member-info">
-              <h4 class="member-name">{{ member.name }}</h4>
-              <p class="member-title">{{ member.title }}</p>
-              <div class="member-contact">
+        <div ref="rightPanel" class="right-panel">
+          <div v-if="selectedMember" class="member-details">
+            <div class="info-card">
+              <div class="member-header">
+                <div class="member-avatar-large">
+                  <span>{{ getInitials(selectedMember.name) }}</span>
+                </div>
+                <div class="member-header-info">
+                  <h3 class="member-name-large">{{ selectedMember.name }}</h3>
+                  <div class="member-role-tags">
+                    <span :class="['role-tag', getRoleTagClass(selectedMember.role)]">
+                      {{ selectedMember.role }}
+                    </span>
+                    <span v-if="selectedMember.title" class="title-tag">{{
+                      selectedMember.title
+                    }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="contact-info">
                 <div class="contact-item">
                   <svg
                     width="16"
@@ -198,14 +87,12 @@
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
                   >
                     <path
                       d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
                     />
                   </svg>
-                  <span>{{ member.phone }}</span>
+                  <span>{{ selectedMember.phone }}</span>
                 </div>
                 <div class="contact-item">
                   <svg
@@ -215,541 +102,687 @@
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
                   >
                     <path
                       d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
                     />
                     <polyline points="22,6 12,13 2,6" />
                   </svg>
-                  <span>{{ member.email }}</span>
+                  <span>{{ selectedMember.email }}</span>
+                </div>
+                <div class="contact-item">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <span>{{ selectedMember.location || 'Management Office' }}</span>
                 </div>
               </div>
-              <div v-if="member.responsibility" class="entrance-responsibility">
-                <span class="responsibility-label">Entrance responsibility:</span>
-                <div class="entrance-buttons">
-                  <button v-for="num in member.responsibility" :key="num" class="entrance-btn">
-                    {{ num }}
-                  </button>
+            </div>
+
+            <div class="info-card">
+              <h4 class="card-title">Activity Overview</h4>
+              <div class="activity-stats">
+                <div class="stat-card blue">
+                  <div class="stat-value">{{ selectedMember.totalRequests || 156 }}</div>
+                  <div class="stat-label">Total Requests</div>
+                </div>
+                <div class="stat-card green">
+                  <div class="stat-value">{{ selectedMember.resolved || 142 }}</div>
+                  <div class="stat-label">Resolved</div>
+                </div>
+                <div class="stat-card orange">
+                  <div class="stat-value">{{ selectedMember.pending || 14 }}</div>
+                  <div class="stat-label">Pending</div>
                 </div>
               </div>
-              <button class="message-button" @click="contactMember(member)">
-                <span>Message</span>
-              </button>
             </div>
-            <div v-if="index < members.length - 1" class="member-navigation">
-              <button class="nav-button">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="white"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-              <div class="nav-divider"></div>
-              <button class="nav-button">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="white"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
+
+            <div class="info-card">
+              <h4 class="card-title">Statistics</h4>
+              <div class="statistics-content">
+                <div class="stat-item">
+                  <div class="stat-item-label">Resolution Rate</div>
+                  <div class="progress-bar-container">
+                    <div
+                      class="progress-bar"
+                      :style="{ width: selectedMember.resolutionRate || '91%' }"
+                    ></div>
+                  </div>
+                  <div class="stat-item-value">{{ selectedMember.resolutionRate || '91%' }}</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-item-label">Member Since</div>
+                  <div class="stat-item-value">
+                    {{ selectedMember.memberSince || '2019-01-10' }}
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <div class="action-buttons">
+              <button class="action-button outlined">View Full Profile</button>
+              <button class="action-button primary">Send Message</button>
+            </div>
+          </div>
+          <div v-else class="empty-selection">
+            <p>Select a member to view details</p>
           </div>
         </div>
       </div>
     </div>
-
-    <v-dialog v-model="showCalendar" max-width="400">
-      <v-card>
-        <v-card-title>
-          <v-spacer></v-spacer>
-          <button class="close-button" @click="showCalendar = false">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </v-card-title>
-        <v-card-text>
-          <v-date-picker v-model="selectedDate" show-adjacent-months></v-date-picker>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import SearchField from '@/components/SearchField.vue'
 
-const router = useRouter()
-const showCalendar = ref(false)
-const selectedDate = ref(new Date().toISOString().split('T')[0])
+interface Member {
+  id: number
+  name: string
+  email: string
+  phone: string
+  role: 'Owner' | 'Tenant' | 'Staff Member'
+  apartment?: string
+  title?: string
+  location?: string
+  totalRequests?: number
+  resolved?: number
+  pending?: number
+  resolutionRate?: string
+  memberSince?: string
+}
 
-const members = ref([
+const searchQuery = ref('')
+const activeFilter = ref('All')
+const selectedMember = ref<Member | null>(null)
+const leftPanel = ref<HTMLElement | null>(null)
+const rightPanel = ref<HTMLElement | null>(null)
+
+const filters = ['All', 'Owner', 'Tenant', 'Staff']
+
+const members = ref<Member[]>([
   {
     id: 1,
-    name: 'Tom Smith',
-    title: 'Chairman of the condominium',
+    name: 'Sarah Johnson',
+    email: 'sarah.j@example.com',
     phone: '+38 099 999 99 99',
-    email: 'tomsmith@gmail.com',
-    avatar: '/placeholder-avatar.jpg',
-    responsibility: [1, 2, 3, 4]
+    role: 'Owner',
+    apartment: 'A-302'
   },
   {
     id: 2,
-    name: 'Tom Smith',
-    title: 'the condominium',
+    name: 'Michael Chen',
+    email: 'michael.chen@example.com',
     phone: '+38 099 999 99 99',
-    email: 'tomsmith2@gmail.com',
-    avatar: '/placeholder-avatar.jpg',
-    responsibility: [1, 2]
+    role: 'Tenant',
+    apartment: 'B-105'
+  },
+  {
+    id: 3,
+    name: 'Tom Smith',
+    email: 'tomsmith@gmail.com',
+    phone: '+38 099 999 99 99',
+    role: 'Staff Member',
+    apartment: 'Office',
+    title: 'Chairman of the condominium',
+    location: 'Management Office',
+    totalRequests: 156,
+    resolved: 142,
+    pending: 14,
+    resolutionRate: '91%',
+    memberSince: '2019-01-10'
+  },
+  {
+    id: 4,
+    name: 'Emma Davis',
+    email: 'emma.davis@example.com',
+    phone: '+38 099 999 99 99',
+    role: 'Owner',
+    apartment: 'A-101'
+  },
+  {
+    id: 5,
+    name: 'John Wilson',
+    email: 'john.wilson@example.com',
+    phone: '+38 099 999 99 99',
+    role: 'Tenant',
+    apartment: 'B-205'
+  },
+  {
+    id: 6,
+    name: 'Lisa Anderson',
+    email: 'lisa.anderson@example.com',
+    phone: '+38 099 999 99 99',
+    role: 'Owner',
+    apartment: 'A-203'
+  },
+  {
+    id: 7,
+    name: 'David Brown',
+    email: 'david.brown@example.com',
+    phone: '+38 099 999 99 99',
+    role: 'Tenant',
+    apartment: 'B-304'
+  },
+  {
+    id: 8,
+    name: 'Maria Garcia',
+    email: 'maria.garcia@example.com',
+    phone: '+38 099 999 99 99',
+    role: 'Staff Member',
+    apartment: 'Office'
   }
 ])
 
-const contactMember = (member: any) => {
-  router.push('/chat')
+const filteredMembers = computed(() => {
+  let filtered = members.value
+
+  if (activeFilter.value !== 'All') {
+    const filterRole = activeFilter.value === 'Staff' ? 'Staff Member' : activeFilter.value
+    filtered = filtered.filter((m) => m.role === filterRole)
+  }
+
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter(
+      (m) => m.name.toLowerCase().includes(query) || m.email.toLowerCase().includes(query)
+    )
+  }
+
+  return filtered
+})
+
+const selectMember = (member: Member) => {
+  selectedMember.value = member
+  syncPanelHeights()
 }
+
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
+const getRoleTagClass = (role: string) => {
+  if (role === 'Owner') return 'tag-owner'
+  if (role === 'Tenant') return 'tag-tenant'
+  if (role === 'Staff Member') return 'tag-staff'
+  return ''
+}
+
+const syncPanelHeights = () => {
+  nextTick(() => {
+    if (rightPanel.value && leftPanel.value) {
+      const rightHeight = rightPanel.value.offsetHeight
+      leftPanel.value.style.height = `${rightHeight}px`
+    }
+  })
+}
+
+onMounted(() => {
+  if (members.value.length > 0) {
+    selectedMember.value = members.value[2]
+  }
+  syncPanelHeights()
+  window.addEventListener('resize', syncPanelHeights)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', syncPanelHeights)
+})
 </script>
 
 <style scoped>
-.members-container-fluid :deep(.v-container__inner) {
-  padding: 0 !important;
-  max-width: none !important;
-}
-
-.members-container-fluid {
-  padding: 0 !important;
-}
-
-:deep(.v-container) {
-  padding: 0 !important;
-}
-
-.members-page {
+.members-directory-page {
   min-height: 100vh;
   background-color: #f5f5f5;
-  padding: 0;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
+  padding: 2rem;
 }
 
-.members-container {
-  max-width: 480px;
-  margin: 0 auto;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+.page-header {
+  margin-bottom: 2rem;
 }
 
-.top-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  width: 100%;
-  background-color: #ffffff;
-  padding: 16px;
-  border-radius: 16px;
-}
-
-.grid-icon-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #000;
-  padding: 0;
-}
-
-.grid-icon-button:hover {
-  background-color: #f5f5f5;
-}
-
-.top-right-icons {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.top-icon-button {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  border: 0.09375rem solid #000;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #000;
-  padding: 0;
-  transition: all 0.2s;
-}
-
-.top-icon-button:hover {
-  background-color: #f5f5f5;
-}
-
-.action-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  padding: 0 16px;
-}
-
-.back-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1.5px solid #000;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #000;
-  padding: 0;
-  transition: all 0.2s;
-}
-
-.back-button:hover {
-  background-color: #f5f5f5;
-}
-
-.members-overview-section {
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 24px;
-}
-
-.section-title {
-  font-size: 16px;
+.page-title {
+  font-size: 2rem;
   font-weight: 700;
-  color: #000;
-  margin-bottom: 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #212121;
+  margin: 0 0 0.5rem 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.members-chart-container {
-  position: relative;
+.page-subtitle {
+  font-size: 1rem;
+  color: #757575;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.search-section {
+  margin-bottom: 2rem;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-icon-button {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 1.67px solid #99a1af;
+  background-color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  cursor: pointer;
+  color: #757575;
+  flex-shrink: 0;
 }
 
-.check-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #1976d2;
-  color: #ffffff;
-  border: none;
+.filter-icon-button:hover {
+  background-color: #f5f5f5;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.filter-button {
+  padding: 0.5rem 1.5rem;
+  border: 0.125rem solid #204ef6;
+  background-color: #ffffff;
+  color: #204ef6;
   border-radius: 20px;
-  padding: 8px 16px;
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
+  transition: all 0.2s;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  transition: background-color 0.2s;
+}
+
+.filter-button:hover {
+  background-color: #e3f2fd;
+}
+
+.filter-button.active {
+  background-color: #204ef6;
+  color: #ffffff;
+}
+
+.content-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.left-panel {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  max-height: 100%;
+}
+
+.panel-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #212121;
+  margin: 0 0 1.5rem 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  flex-shrink: 0;
+}
+
+.members-list {
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.member-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: transparent;
 }
 
-.check-button:hover {
-  background-color: #1565c0;
+.member-item:hover {
+  background-color: #f5f5f5;
 }
 
-.donut-chart {
-  position: relative;
+.member-item.active {
+  background-color: #e3f2fd;
+}
+
+.member-avatar-small {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: #ffd572;
+  color: #92400e;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.chart-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-
-.chart-text {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1976d2;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.chart-label {
-  font-size: 12px;
-  color: #666;
-  margin-top: -4px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.members-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  color: #000;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.legend-circle {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.legend-circle.managers {
-  background-color: #90caf9;
-}
-
-.legend-circle.realtors {
-  background-color: #b9d0ff;
-}
-
-.legend-circle.cleaning {
-  background-color: #3e7eff;
-}
-
-.legend-circle.technicians {
-  background-color: #ba68c8;
-}
-
-.legend-count {
   font-weight: 600;
-  margin-left: auto;
-}
-
-.member-cards-section {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.member-card {
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  gap: 16px;
-  position: relative;
-}
-
-.member-avatar {
+  font-size: 0.875rem;
   flex-shrink: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.member-avatar img {
-  width: 80px;
-  height: 80px;
-  border-radius: 12px;
-  object-fit: cover;
-  border: 2px solid #e0e0e0;
-}
-
-.member-info {
+.member-info-small {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.25rem;
 }
 
-.member-name {
-  font-size: 18px;
+.member-name-small {
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: #000;
-  margin: 0;
+  color: #212121;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.member-title {
-  font-size: 14px;
-  color: #1976d2;
-  margin: 0;
+.member-email-small {
+  font-size: 0.875rem;
+  color: #757575;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.member-contact {
+.member-tags-small {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.role-tag {
+  padding: 0.25rem 0.75rem;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.tag-owner {
+  background-color: #c8daff;
+  color: #1e40af;
+}
+
+.tag-tenant {
+  background-color: #ffd572;
+  color: #92400e;
+}
+
+.tag-staff {
+  background-color: #cabeff;
+  color: #5b21b6;
+}
+
+.apartment-tag {
+  padding: 0.25rem 0.75rem;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #f3f4f6;
+  color: #374151;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.right-panel {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+  height: fit-content;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 4px;
+}
+
+.member-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.info-card {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.1);
+}
+
+.member-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.member-avatar-large {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background-color: #ffd572;
+  color: #92400e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.member-header-info {
+  flex: 1;
+}
+
+.member-name-large {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #212121;
+  margin: 0 0 0.75rem 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.member-role-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.title-tag {
+  padding: 0.25rem 0.75rem;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #c8daff;
+  color: #1e40af;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .contact-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #333;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+  color: #212121;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .contact-item svg {
-  color: #666;
+  color: #757575;
   flex-shrink: 0;
 }
 
-.entrance-responsibility {
-  margin-top: 8px;
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #212121;
+  margin: 0 0 1rem 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.activity-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.stat-card {
+  flex: 1;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.stat-card.blue {
+  background-color: #204ef6;
+  color: #ffffff;
+}
+
+.stat-card.green {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.stat-card.orange {
+  background-color: #ffd572;
+  color: #92400e;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.statistics-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 1.5rem;
 }
 
-.responsibility-label {
-  font-size: 13px;
-  color: #666;
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-item-label {
+  font-size: 0.875rem;
+  color: #757575;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.entrance-buttons {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.progress-bar-container {
+  width: 100%;
+  height: 0.5rem;
+  background-color: #e0e0e0;
+  border-radius: 0.25rem;
+  overflow: hidden;
 }
 
-.entrance-btn {
-  width: 36px;
-  height: 36px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #333;
-  font-size: 14px;
+.progress-bar {
+  height: 100%;
+  background-color: #dcfce7;
+  border-radius: 0.25rem;
+}
+
+.stat-item-value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #212121;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.action-button {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   transition: all 0.2s;
-}
-
-.entrance-btn:hover {
-  border-color: #1976d2;
-  color: #1976d2;
-}
-
-.message-button {
-  background: #1976d2;
-  color: #ffffff;
-  border: none;
-  border-radius: 24px;
-  padding: 10px 24px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  transition: background-color 0.2s;
-  margin-top: 12px;
-  width: fit-content;
 }
 
-.message-button:hover {
-  background-color: #1565c0;
+.action-button.outlined {
+  border: 0.125rem solid #204ef6;
+  background-color: #ffffff;
+  color: #204ef6;
 }
 
-.member-navigation {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background-color: #424242;
-  border-radius: 20px;
-  padding: 8px 16px;
+.action-button.outlined:hover {
+  background-color: #e3f2fd;
 }
 
-.nav-button {
-  background: transparent;
+.action-button.primary {
   border: none;
-  cursor: pointer;
+  background-color: #204ef6;
+  color: #ffffff;
+}
+
+.action-button.primary:hover {
+  background-color: #1a3dd4;
+}
+
+.empty-selection {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  height: 100%;
+  color: #9e9e9e;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.nav-divider {
-  width: 1px;
-  height: 20px;
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
-@media (max-width: 480px) {
-  .members-page {
-    padding: 16px;
-  }
-
-  .top-header {
-    padding: 12px;
-    border-radius: 12px;
-  }
-
-  .member-avatar img {
-    width: 60px;
-    height: 60px;
-  }
-
-  .members-chart-container {
-    margin-bottom: 12px;
-  }
-
-  .member-navigation {
-    bottom: 12px;
-    right: 12px;
-    padding: 6px 12px;
+@media (max-width: 48rem) {
+  .content-layout {
+    grid-template-columns: 1fr;
   }
 }
 </style>

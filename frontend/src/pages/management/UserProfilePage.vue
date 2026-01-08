@@ -7,14 +7,26 @@
             <h1 class="page-title">User Profile</h1>
             <p class="page-subtitle">View and manage profile information</p>
           </div>
-          <button class="edit-profile-button" @click="openEditDialog">Edit Profile</button>
+          <button class="edit-profile-button" @click="openEditDialog">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            <span>Edit Profile</span>
+          </button>
         </div>
 
         <div class="profile-content">
           <div class="left-column">
             <div class="info-card">
-              <h3 class="card-title">Personal Information</h3>
-              <div class="profile-picture-container">
+              <div class="profile-info-content">
                 <div class="profile-picture">
                   <img
                     v-if="userProfile.avatar"
@@ -26,22 +38,26 @@
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                 </div>
-              </div>
-              <div class="info-field">
-                <span class="field-label">First Name:</span>
-                <span class="field-value">{{ userProfile.firstName }}</span>
-              </div>
-              <div class="info-field">
-                <span class="field-label">Last Name:</span>
-                <span class="field-value">{{ userProfile.lastName }}</span>
-              </div>
-              <div class="info-field">
-                <span class="field-label">Role:</span>
-                <span class="field-value role-highlight">{{ userProfile.role }}</span>
-              </div>
-              <div class="info-field">
-                <span class="field-label">User Type:</span>
-                <span class="field-value">{{ userProfile.userType }}</span>
+                <div class="profile-info-fields">
+                  <div class="name-row">
+                    <div class="info-field">
+                      <span class="field-label">First Name</span>
+                      <span class="field-value">{{ userProfile.firstName }}</span>
+                    </div>
+                    <div class="info-field">
+                      <span class="field-label">Last Name</span>
+                      <span class="field-value">{{ userProfile.lastName }}</span>
+                    </div>
+                  </div>
+                  <div class="info-field">
+                    <span class="field-label">Role</span>
+                    <a href="#" class="field-value role-link">{{ userProfile.role }}</a>
+                  </div>
+                  <div class="info-field">
+                    <span class="field-label">User Type</span>
+                    <span class="field-value">{{ userProfile.userType }}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -219,7 +235,10 @@
             <div v-for="activity in activityHistory" :key="activity.id" class="activity-item">
               <div class="activity-content">
                 <span class="activity-description">{{ activity.description }}</span>
-                <span class="activity-date">({{ activity.date }} #{{ activity.id }})</span>
+                <span class="activity-date"
+                  >({{ activity.date }} <a href="#" class="activity-link">#{{ activity.id }}</a
+                  >)</span
+                >
               </div>
               <span :class="['activity-tag', activity.status.toLowerCase()]">
                 {{ activity.status }}
@@ -430,22 +449,21 @@ onMounted(() => {
 
 .edit-profile-button {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(
-    to bottom,
-    #ffffff 0%,
-    rgba(185, 208, 255, 0.925) 50%,
-    rgba(62, 126, 255, 0.8) 100%
-  );
+  background-color: #204ef6;
   border: none;
   border-radius: 0.5rem;
   color: #ffffff;
   font-weight: 500;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.2s;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .edit-profile-button:hover {
+  background-color: #1a3dd4;
   transform: translateY(-0.125rem);
 }
 
@@ -478,21 +496,29 @@ onMounted(() => {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.profile-picture-container {
+.profile-info-content {
   display: flex;
-  justify-content: center;
-  margin-bottom: 1.5rem;
+  gap: 1.5rem;
+  align-items: flex-start;
 }
 
 .profile-picture {
-  width: 8rem;
-  height: 8rem;
+  width: 6rem;
+  height: 6rem;
   border-radius: 50%;
   background-color: #e0e0e0;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  flex-shrink: 0;
+}
+
+.profile-info-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .profile-picture img {
@@ -505,16 +531,20 @@ onMounted(() => {
   color: #757575;
 }
 
-.info-field {
+.name-row {
   display: flex;
-  justify-content: space-between;
-  padding: 0.75rem 0;
-  border-bottom: 0.0625rem solid #e0e0e0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  gap: 2rem;
 }
 
-.info-field:last-child {
-  border-bottom: none;
+.name-row .info-field {
+  flex: 1;
+}
+
+.info-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .field-label {
@@ -528,9 +558,15 @@ onMounted(() => {
   color: #212121;
 }
 
-.role-highlight {
+.role-link {
   color: #204ef6;
   font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.role-link:hover {
+  text-decoration: underline;
 }
 
 .contact-item {
@@ -627,11 +663,11 @@ onMounted(() => {
 }
 
 .workload-fill.green {
-  background-color: #4caf50;
+  background-color: #dcfce7;
 }
 
 .workload-fill.orange {
-  background-color: #ff9800;
+  background-color: #ffd572;
 }
 
 .quick-info-item {
@@ -717,14 +753,28 @@ onMounted(() => {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+.activity-link {
+  color: #204ef6;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.activity-link:hover {
+  text-decoration: underline;
+}
+
 .activity-tag.completed {
-  background-color: #c8e6c9;
-  color: #2e7d32;
+  background-color: #dcfce7;
+  color: #166534;
+  border-radius: 5px;
+  padding: 0.25rem 0.75rem;
 }
 
 .activity-tag.in-progress {
-  background-color: #fff9c4;
-  color: #f57f17;
+  background-color: #ffd572;
+  color: #92400e;
+  border-radius: 5px;
+  padding: 0.25rem 0.75rem;
 }
 
 @media (max-width: 48rem) {

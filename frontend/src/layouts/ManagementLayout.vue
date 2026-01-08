@@ -102,16 +102,6 @@
             <span class="nav-label">Members Directory</span>
           </router-link>
 
-          <router-link to="/management/profile" class="nav-item" active-class="active">
-            <div class="nav-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </div>
-            <span class="nav-label">User Profile</span>
-          </router-link>
-
           <router-link to="/management/analytics" class="nav-item" active-class="active">
             <div class="nav-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -163,7 +153,7 @@
           </router-link>
         </div>
 
-        <div class="user-profile">
+        <div class="user-profile" @click="$router.push('/management/profile')">
           <div class="profile-avatar">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -327,6 +317,13 @@ const user = computed(() => authStore.user)
   margin-bottom: -1.5rem;
   color: #ffffff;
   width: calc(100% + 2rem);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-profile:hover {
+  background-color: #1a3dd4;
+  transform: translateY(-0.125rem);
 }
 
 .profile-avatar {
