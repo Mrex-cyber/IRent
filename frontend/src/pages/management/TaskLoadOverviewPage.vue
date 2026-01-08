@@ -115,37 +115,45 @@
           <h2 class="section-title">Staff Workload</h2>
           <div class="staff-list">
             <div v-for="staff in staffMembers" :key="staff.id" class="staff-card">
-              <div class="staff-header">
-                <div class="staff-avatar">
-                  <span class="avatar-emoji">{{ staff.avatar }}</span>
+              <div class="staff-header-row">
+                <div class="staff-profile">
+                  <div class="staff-avatar">
+                    <span class="avatar-emoji">{{ staff.avatar }}</span>
+                  </div>
+                  <div class="staff-info">
+                    <div class="staff-name">{{ staff.name }}</div>
+                    <div class="staff-role">{{ staff.role }}</div>
+                  </div>
                 </div>
-                <div class="staff-info">
-                  <div class="staff-name">{{ staff.name }}</div>
-                  <div class="staff-role">{{ staff.role }}</div>
-                </div>
-              </div>
-              <div class="staff-stats">
-                <div class="stat-item">
-                  <span class="stat-value-blue">{{ staff.resolved }} Resolved</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-value-orange">{{ staff.inProgress }} In Progress</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-value-blue">{{ staff.avgTime }} Avg Time</span>
-                </div>
-                <div class="stat-item total">
-                  <span class="stat-value-gray">{{ staff.total }} Total</span>
+                <div class="metrics-header">
+                  <span class="total-value">{{ staff.total }} Total</span>
                 </div>
               </div>
-              <div class="workload-bar-container">
-                <div class="workload-bar">
-                  <div
-                    :class="['workload-fill', getWorkloadColorClass(staff.workload)]"
-                    :style="{ width: `${staff.workload}%` }"
-                  ></div>
+              <div class="staff-metrics">
+                <div class="metrics-grid">
+                  <div class="metric-item">
+                    <span class="metric-label">Resolved</span>
+                    <span class="metric-value resolved">{{ staff.resolved }}</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="metric-label">In Progress</span>
+                    <span class="metric-value in-progress">{{ staff.inProgress }}</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="metric-label">Avg Time</span>
+                    <span class="metric-value avg-time">{{ staff.avgTime }}</span>
+                  </div>
                 </div>
-                <span class="workload-percentage">{{ staff.workload }}%</span>
+                <div class="workload-bar-container">
+                  <span class="workload-label">Workload</span>
+                  <div class="workload-bar">
+                    <div
+                      :class="['workload-fill', getWorkloadColorClass(staff.workload)]"
+                      :style="{ width: `${staff.workload}%` }"
+                    ></div>
+                  </div>
+                  <span class="workload-percentage">{{ staff.workload }}%</span>
+                </div>
               </div>
             </div>
           </div>
@@ -315,7 +323,7 @@ onMounted(() => {
 
 .statistics-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
   margin-bottom: 3rem;
 }
@@ -419,27 +427,36 @@ onMounted(() => {
 
 .staff-card {
   padding: 1.5rem;
-  background-color: #fafafa;
+  background-color: #f5f5f5;
   border-radius: 0.75rem;
-  border: 0.0625rem solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
 }
 
-.staff-header {
+.staff-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.staff-profile {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1rem;
 }
 
 .staff-avatar {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 3rem;
+  height: 3rem;
   border-radius: 50%;
-  background-color: #fff59d;
+  background-color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.5rem;
   flex-shrink: 0;
 }
 
@@ -448,12 +465,13 @@ onMounted(() => {
 }
 
 .staff-info {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .staff-name {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   color: #212121;
   margin-bottom: 0.25rem;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -465,41 +483,79 @@ onMounted(() => {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.staff-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+.staff-metrics {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
-  margin-bottom: 1rem;
 }
 
-.stat-item {
+.metrics-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.total-value {
   font-size: 0.875rem;
+  font-weight: 500;
+  color: #757575;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.stat-item.total {
-  text-align: right;
+.metrics-grid {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+  justify-content: space-between;
 }
 
-.stat-value-blue {
-  color: #204ef6;
-  font-weight: 500;
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  text-align: center;
 }
 
-.stat-value-orange {
-  color: #ff9800;
-  font-weight: 500;
-}
-
-.stat-value-gray {
+.metric-label {
+  font-size: 0.75rem;
   color: #757575;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.metric-value {
+  font-size: 0.875rem;
   font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.metric-value.resolved {
+  color: #4caf50;
+}
+
+.metric-value.in-progress {
+  color: #ff9800;
+}
+
+.metric-value.avg-time {
+  color: #204ef6;
 }
 
 .workload-bar-container {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.workload-label {
+  font-size: 0.875rem;
+  color: #212121;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .workload-bar {
@@ -542,13 +598,9 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 
-  .staff-stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .stat-item.total {
-    grid-column: 1 / -1;
-    text-align: left;
+  .metrics-grid {
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
   .time-period-selector {

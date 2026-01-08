@@ -984,9 +984,6 @@ onMounted(() => {
   flex-direction: column;
   flex: 1;
 }
-  flex-shrink: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
 
 .conversation-input {
   display: flex;
