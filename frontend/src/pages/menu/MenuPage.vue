@@ -217,6 +217,27 @@
             <span class="menu-label">Settings</span>
           </router-link>
 
+          <router-link to="/management" class="menu-item">
+            <div class="menu-button">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+                <rect
+                  x="3"
+                  y="3"
+                  width="18"
+                  height="18"
+                  rx="2"
+                  ry="2"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <line x1="9" y1="3" x2="9" y2="21" stroke="currentColor" stroke-width="2" />
+                <line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="2" />
+              </svg>
+            </div>
+            <span class="menu-label">Management</span>
+          </router-link>
+
           <router-link to="/auth/login" class="menu-item">
             <div class="menu-button">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
@@ -288,10 +309,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useAuthStore } from '@/store/auth'
 
+const authStore = useAuthStore()
 const showCalendar = ref(false)
 const selectedDate = ref(new Date().toISOString().split('T')[0])
+
+onMounted(async () => {
+  if (authStore.token && !authStore.user) {
+    await authStore.fetchUser()
+  }
+})
+
+const isAdmin = computed(() => authStore.isAdmin)
 </script>
 
 <style scoped>
@@ -453,14 +484,19 @@ const selectedDate = ref(new Date().toISOString().split('T')[0])
   width: 6.25rem;
   height: 6.25rem;
   border-radius: 1rem;
-  background: linear-gradient(135deg, #64b5f6 0%, #42a5f5 50%, #2196f3 100%);
+  background: linear-gradient(
+    to bottom,
+    #ffffff 0%,
+    rgba(185, 208, 255, 0.925) 50%,
+    rgba(62, 126, 255, 0.8) 100%
+  );
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 0.75rem;
   color: #ffffff;
   box-shadow:
-    0 0.25rem 0.75rem rgba(33, 150, 243, 0.3),
+    0 0.25rem 0.75rem rgba(32, 78, 246, 0.3),
     inset 0 0.0625rem 0 rgba(255, 255, 255, 0.2),
     inset 0 -0.0625rem 0 rgba(0, 0, 0, 0.1);
 }

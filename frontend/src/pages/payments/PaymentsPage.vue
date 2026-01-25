@@ -88,6 +88,43 @@
 import { ref, onMounted } from 'vue'
 import TopNavbar from '@/components/TopNavbar.vue'
 
+const mockPaymentStatus = {
+  totalAmount: 5000,
+  paidAmount: 3000,
+  pendingAmount: 1500,
+  overdueAmount: 500
+}
+
+const mockRecentPayments = [
+  {
+    id: '1',
+    type: 'Rent',
+    description: 'Monthly Rent',
+    amount: 2500,
+    status: 'Paid',
+    dueDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    apartment: { title: 'Modern 2BR Apartment' }
+  },
+  {
+    id: '2',
+    type: 'Utilities',
+    description: 'Electricity & Water',
+    amount: 150,
+    status: 'Pending',
+    dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+    apartment: { title: 'Modern 2BR Apartment' }
+  },
+  {
+    id: '3',
+    type: 'Maintenance',
+    description: 'Building Maintenance Fee',
+    amount: 200,
+    status: 'Overdue',
+    dueDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    apartment: { title: 'Spacious 3BR Loft' }
+  }
+]
+
 const paymentStatus = ref({
   totalAmount: 0,
   paidAmount: 0,
@@ -144,25 +181,13 @@ const viewHistory = () => {
 }
 
 const fetchPaymentStatus = async () => {
-  try {
-    const response = await fetch('/api/payments/status')
-    if (response.ok) {
-      paymentStatus.value = await response.json()
-    }
-  } catch (error) {
-    console.error('Fetch payment status error:', error)
-  }
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  paymentStatus.value = { ...mockPaymentStatus }
 }
 
 const fetchRecentPayments = async () => {
-  try {
-    const response = await fetch('/api/payments/recent')
-    if (response.ok) {
-      recentPayments.value = await response.json()
-    }
-  } catch (error) {
-    console.error('Fetch recent payments error:', error)
-  }
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  recentPayments.value = [...mockRecentPayments]
 }
 
 onMounted(() => {

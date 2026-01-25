@@ -251,7 +251,7 @@
                     cy="90"
                     r="80"
                     fill="none"
-                    stroke="#2196f3"
+                    stroke="#204EF6"
                     stroke-width="30"
                     stroke-dasharray="188.4"
                     stroke-dashoffset="131.88"
@@ -627,7 +627,7 @@ const selectedDate = ref(new Date().toISOString().split('T')[0])
 }
 
 .legend-circle.in-progress {
-  background-color: #2196f3;
+  background-color: #204ef6;
 }
 
 .legend-circle.completed {
