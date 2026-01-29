@@ -90,4 +90,56 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    public function profile(): HasOne
+    {
+        return $this->hasOne(UserProfile::class);
+    }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(Activity::class);
+    }
+
+    
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(Announcement::class);
+    }
+
+    public function responsibleEntrances(): BelongsToMany
+    {
+        return $this->belongsToMany(Entrance::class, 'entrance_user');
+    }
+
+    public function assignedRequests(): HasMany
+    {
+        return $this->hasMany(Request::class, 'assignee_id');
+    }
+    
+    public function ownedApartments(): HasMany
+    {
+        return $this->hasMany(Apartment::class, 'owner_id');
+    }
+
+    public function rentedApartments(): HasMany
+    {
+        return $this->hasMany(Apartment::class, 'tenant_id');
+    }
+
+    public function createdRequests(): HasMany
+    {
+        return $this->hasMany(Request::class, 'creator_id');
+    }
+
+    public function sentMessages(): HasMany
+    {
+        return $this->hasMany(Message::class);
+    }
+    
+    public function conversations(): BelongsToMany {
+    return $this->belongsToMany(Conversation::class, 'conversation_participants')
+                ->withPivot('last_read_at')
+                ->orderByDesc('last_message_at');
+}
 }
