@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -101,7 +103,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Activity::class);
     }
 
-    
     public function announcements(): HasMany
     {
         return $this->hasMany(Announcement::class);
@@ -116,7 +117,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Request::class, 'assignee_id');
     }
-    
+
     public function ownedApartments(): HasMany
     {
         return $this->hasMany(Apartment::class, 'owner_id');
@@ -136,10 +137,11 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Message::class);
     }
-    
-    public function conversations(): BelongsToMany {
-    return $this->belongsToMany(Conversation::class, 'conversation_participants')
-                ->withPivot('last_read_at')
-                ->orderByDesc('last_message_at');
-}
+
+    public function conversations(): BelongsToMany
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_participants')
+            ->withPivot('last_read_at')
+            ->orderByDesc('last_message_at');
+    }
 }

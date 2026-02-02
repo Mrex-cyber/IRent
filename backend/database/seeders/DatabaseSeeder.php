@@ -19,10 +19,16 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
         ]);
 
-        User::factory()->create([
-            'first_name' => 'Test',
-            'last_name' => 'User',
-            'email' => 'test@example.com',
+        if (! User::where('email', 'test@example.com')->exists()) {
+            User::factory()->create([
+                'first_name' => 'Test',
+                'last_name' => 'User',
+                'email' => 'test@example.com',
+            ]);
+        }
+
+        $this->call([
+            ActivitySeeder::class,
         ]);
     }
 }

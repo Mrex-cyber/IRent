@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Mail\EmailVerification;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserProfile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -25,6 +26,10 @@ class RegistrationService
                 'is_active' => false,
             ]);
 
+            UserProfile::create([
+                'user_id' => $user->id,
+            ]);
+
             $role = Role::where('name', $data['role'])->firstOrFail();
             $user->roles()->attach($role);
 
@@ -32,7 +37,6 @@ class RegistrationService
             $verificationUrl = "{$frontendUrl}/verify-email?token={$token}";
             Mail::to($user)->send(new EmailVerification($user, $verificationUrl));
 
-            // Load roles relationship for response
             $user->load('roles');
 
             return $user;
