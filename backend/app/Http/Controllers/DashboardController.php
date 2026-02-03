@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-
-    public function getTaskOverview() {
+    public function getTaskOverview()
+    {
         $query = Request::where('created_at', '>=', now()->subMonth());
 
         $total = $query->count();
@@ -25,7 +25,7 @@ class DashboardController extends Controller
             'total' => $total,
             'resolved' => $resolved,
             'unresolved' => $unresolved,
-            'avg_time' => round($avgTime, 1)
+            'avg_time' => round($avgTime, 1),
         ];
     }
 }

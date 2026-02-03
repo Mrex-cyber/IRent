@@ -12,15 +12,18 @@ class Request extends Model
         'resolved_at' => 'datetime',
     ];
 
-    public function apartment() {
+    public function apartment()
+    {
         return $this->belongsTo(Apartment::class);
     }
 
-    public function creator() {
+    public function creator()
+    {
         return $this->belongsTo(User::class, 'creator_id');
     }
 
-    public function assignee() {
+    public function assignee()
+    {
         return $this->belongsTo(User::class, 'assignee_id');
     }
 }

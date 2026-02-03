@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +18,7 @@ return new class extends Migration
         Schema::create('entrances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('building_id')->constrained()->onDelete('cascade');
-            $table->string('name'); 
+            $table->string('name');
             $table->string('code')->nullable();
             $table->timestamps();
         });
@@ -29,10 +30,9 @@ return new class extends Migration
             $table->integer('floor')->nullable();
             $table->float('area')->nullable();
 
-       
             $table->foreignId('owner_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('tenant_id')->nullable()->constrained('users')->nullOnDelete();
-            
+
             $table->timestamps();
         });
 

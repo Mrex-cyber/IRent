@@ -8,15 +8,18 @@ class Entrance extends Model
 {
     protected $fillable = ['building_id', 'name', 'code'];
 
-    public function building() {
+    public function building()
+    {
         return $this->belongsTo(Building::class);
     }
 
-    public function apartments() {
+    public function apartments()
+    {
         return $this->hasMany(Apartment::class);
     }
 
-    public function responsibleStaff() {
+    public function responsibleStaff()
+    {
         return $this->belongsToMany(User::class, 'entrance_user');
     }
 }

@@ -8,11 +8,13 @@ class UserProfile extends Model
 {
     protected $fillable = ['user_id', 'phone', 'address', 'avatar_url', 'bio'];
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function workloadStats() {
+    public function workloadStats()
+    {
         return $this->hasOne(WorkloadStats::class);
     }
 }

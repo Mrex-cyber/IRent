@@ -194,14 +194,22 @@ class LoginController extends Controller
         return $this->respondWithToken(auth('api')->refresh());
     }
 
-    
     protected function respondWithToken($token): JsonResponse
     {
+        $user = auth('api')->user();
+        $role = $user->roles()->first();
+
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60, 
-            'user' => auth('api')->user() 
+            'expires_in' => auth('api')->factory()->getTTL() * 60,
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'role' => $role?->name,
+            ],
         ]);
     }
 }

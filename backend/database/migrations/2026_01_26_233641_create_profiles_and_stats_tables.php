@@ -17,27 +17,25 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        
         Schema::create('workload_stats', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_profile_id')->constrained('user_profiles')->onDelete('cascade');
-            
-        
-            $table->integer('active_requests_count')->default(0); 
-            $table->integer('resolved_requests_count')->default(0); 
-            $table->float('avg_response_time')->default(0.0); 
-            
-            $table->integer('max_capacity')->default(10); 
-            
+
+            $table->integer('active_requests_count')->default(0);
+            $table->integer('resolved_requests_count')->default(0);
+            $table->float('avg_response_time')->default(0.0);
+
+            $table->integer('max_capacity')->default(10);
+
             $table->timestamps();
         });
 
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('action'); 
-            $table->string('subject')->nullable(); 
-            $table->json('meta_data')->nullable(); 
+            $table->string('action');
+            $table->string('subject')->nullable();
+            $table->json('meta_data')->nullable();
             $table->timestamps();
         });
     }

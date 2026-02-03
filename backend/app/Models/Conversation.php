@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Conversation extends Model
 {
@@ -13,17 +14,20 @@ class Conversation extends Model
         'last_message_at' => 'datetime',
     ];
 
-    public function messages(): HasMany {
+    public function messages(): HasMany
+    {
         return $this->hasMany(Message::class);
     }
 
-    public function participants(): BelongsToMany {
+    public function participants(): BelongsToMany
+    {
         return $this->belongsToMany(User::class, 'conversation_participants')
-                    ->withPivot('last_read_at')
-                    ->withTimestamps();
+            ->withPivot('last_read_at')
+            ->withTimestamps();
     }
 
-    public function latestMessage() {
+    public function latestMessage()
+    {
         return $this->hasOne(Message::class)->latestOfMany();
     }
 }

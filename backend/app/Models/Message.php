@@ -9,12 +9,13 @@ class Message extends Model
 {
     protected $fillable = ['conversation_id', 'user_id', 'body', 'attachment_url'];
 
-    public function conversation(): BelongsTo {
+    public function conversation(): BelongsTo
+    {
         return $this->belongsTo(Conversation::class);
     }
 
-    
-    public function sender(): BelongsTo {
+    public function sender(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
 }
