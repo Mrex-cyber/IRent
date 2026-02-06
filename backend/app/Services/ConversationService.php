@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Contracts\ConversationServiceInterface;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use Illuminate\Support\Collection;
 
-class ConversationService
+class ConversationService implements ConversationServiceInterface
 {
     public function getInboxForUser(User $user): array
     {
@@ -19,19 +21,19 @@ class ConversationService
         return $conversations->map(fn (Conversation $c) => $this->formatInboxItem($c))->values()->all();
     }
 
-    public function getConversationMessages(Conversation $conversation, User $user): array
+    /**
+     * @return Collection<int, Message>
+     */
+    public function getConversationMessages(Conversation $conversation, User $user): Collection
     {
         if (! $this->userCanAccessConversation($conversation, $user)) {
-            return [];
+            return new Collection;
         }
 
         return $conversation->messages()
             ->with('sender')
             ->orderBy('created_at')
-            ->get()
-            ->map(fn (Message $m) => $this->formatMessageForApi($m, $conversation->id))
-            ->values()
-            ->all();
+            ->get();
     }
 
     public function getConversationMessagesByMessageId(int $messageId, User $user): array
@@ -130,6 +132,9 @@ class ConversationService
         return $conversation->load(['participants', 'latestMessage.sender']);
     }
 
+    /**
+     * @return array{conversation: Conversation, message: Message}
+     */
     public function createBroadcast(array $validated, User $user): array
     {
         $recipientIds = array_values(array_unique(array_merge([$user->id], $validated['recipient_ids'])));
@@ -152,50 +157,6 @@ class ConversationService
         $conversation->update(['last_message_at' => $message->created_at]);
 
         return ['conversation' => $conversation, 'message' => $message];
-    }
-
-    public function formatConversationForChat(Conversation $c): array
-    {
-        $latest = $c->relationLoaded('latestMessage') ? $c->latestMessage : $c->latestMessage()->with('sender')->first();
-        $sender = $latest?->sender;
-
-        return [
-            'id' => (string) $c->id,
-            'name' => $c->subject ?? 'Conversation #'.$c->id,
-            'description' => null,
-            'participants' => $c->participants->map(fn ($u) => [
-                'id' => (string) $u->id,
-                'name' => trim($u->first_name.' '.$u->last_name),
-                'email' => $u->email,
-            ])->values()->all(),
-            'lastMessage' => $latest ? [
-                'id' => (string) $latest->id,
-                'content' => $latest->body,
-                'senderId' => (string) $latest->user_id,
-                'senderName' => $sender ? trim($sender->first_name.' '.$sender->last_name) : 'Unknown',
-                'roomId' => (string) $c->id,
-                'timestamp' => $latest->created_at->toIso8601String(),
-                'type' => 'text',
-            ] : null,
-            'createdAt' => $c->created_at->toIso8601String(),
-            'updatedAt' => $c->updated_at->toIso8601String(),
-        ];
-    }
-
-    public function formatMessageForApi(Message $m, int $conversationId): array
-    {
-        $sender = $m->relationLoaded('sender') ? $m->sender : $m->sender()->first();
-
-        return [
-            'id' => (string) $m->id,
-            'content' => $m->body,
-            'senderId' => (string) $m->user_id,
-            'senderName' => $sender ? trim($sender->first_name.' '.$sender->last_name) : 'Unknown',
-            'senderAvatar' => null,
-            'roomId' => (string) $conversationId,
-            'timestamp' => $m->created_at->toIso8601String(),
-            'type' => 'text',
-        ];
     }
 
     public function categoryLabel(string $category): string

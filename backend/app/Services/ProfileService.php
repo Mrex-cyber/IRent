@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
+use App\Contracts\ProfileServiceInterface;
 use App\Models\Activity;
 use App\Models\Request as UserRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-class ProfileService
+class ProfileService implements ProfileServiceInterface
 {
     public function getProfileData(User $user): array
     {

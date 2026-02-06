@@ -2,41 +2,43 @@
 
 namespace App\Http\Controllers\Management;
 
+use App\Contracts\AnnouncementServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAnnouncementRequest;
 use App\Http\Requests\UpdateAnnouncementRequest;
+use App\Http\Resources\AnnouncementResource;
 use App\Models\Announcement;
-use App\Services\AnnouncementService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AnnouncementController extends Controller
 {
     public function __construct(
-        private AnnouncementService $announcementService
+        private AnnouncementServiceInterface $announcementService
     ) {}
 
     public function index(Request $request): JsonResponse
     {
         $announcements = $this->announcementService->listForUser($request->user());
 
-        return response()->json($announcements);
+        return response()->json(AnnouncementResource::collection($announcements)->resolve());
     }
 
     public function store(StoreAnnouncementRequest $request): JsonResponse
     {
         $announcement = $this->announcementService->create($request->user(), $request->validated());
 
-        return response()->json($this->announcementService->format($announcement), 201);
+        return (new AnnouncementResource($announcement))->response()->setStatusCode(201);
     }
 
     public function update(UpdateAnnouncementRequest $request, Announcement $announcement): JsonResponse
     {
         try {
-            $announcement = $this->announcementService->update($announcement, $request->user(), $request->validated());
+            $updated = $this->announcementService->update($announcement, $request->user(), $request->validated());
 
-            return response()->json($this->announcementService->format($announcement));
-        } catch (\Illuminate\Auth\Access\AuthorizationException) {
+            return (new AnnouncementResource($updated))->response();
+        } catch (AuthorizationException) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
     }
@@ -47,7 +49,7 @@ class AnnouncementController extends Controller
             $this->announcementService->delete($announcement, $request->user());
 
             return response()->json(null, 204);
-        } catch (\Illuminate\Auth\Access\AuthorizationException) {
+        } catch (AuthorizationException) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
     }

@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers\Management;
 
+use App\Contracts\ConversationServiceInterface;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreMessageRequest;
+use App\Http\Resources\MessageCollection;
+use App\Http\Resources\MessageResource;
 use App\Models\Conversation;
-use App\Services\ConversationService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
     public function __construct(
-        private ConversationService $conversationService
+        private ConversationServiceInterface $conversationService
     ) {}
 
     public function index(Request $request, Conversation $conversation): JsonResponse
@@ -22,28 +26,23 @@ class MessageController extends Controller
 
         $messages = $this->conversationService->getConversationMessages($conversation, $request->user());
 
-        return response()->json($messages);
+        return response()->json((new MessageCollection($messages, $conversation->id))->toArray($request));
     }
 
-    public function store(Request $request, Conversation $conversation): JsonResponse
+    public function store(StoreMessageRequest $request, Conversation $conversation): JsonResponse
     {
-        $validated = $request->validate([
-            'content' => 'required|string|max:65535',
-        ]);
-
         try {
             $message = $this->conversationService->addMessageToConversation(
                 $conversation,
                 $request->user(),
-                $validated['content']
+                $request->validated()['content']
             );
             $message->load('sender');
 
-            return response()->json(
-                $this->conversationService->formatMessageForApi($message, $conversation->id),
-                201
-            );
-        } catch (\Illuminate\Auth\Access\AuthorizationException) {
+            return (new MessageResource($message, $conversation->id))
+                ->response()
+                ->setStatusCode(201);
+        } catch (AuthorizationException) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
     }

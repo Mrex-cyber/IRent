@@ -2,20 +2,22 @@
 
 namespace App\Services;
 
+use App\Contracts\AnnouncementServiceInterface;
 use App\Models\Announcement;
 use App\Models\User;
+use Illuminate\Support\Collection;
 
-class AnnouncementService
+class AnnouncementService implements AnnouncementServiceInterface
 {
-    public function listForUser(User $user): array
+    /**
+     * @return Collection<int, Announcement>
+     */
+    public function listForUser(User $user): Collection
     {
         return Announcement::with('author')
             ->where('user_id', $user->id)
             ->latest()
-            ->get()
-            ->map(fn (Announcement $a) => $this->format($a))
-            ->values()
-            ->all();
+            ->get();
     }
 
     public function create(User $user, array $data): Announcement
@@ -71,25 +73,5 @@ class AnnouncementService
         }
 
         $announcement->delete();
-    }
-
-    public function format(Announcement $a): array
-    {
-        $author = $a->relationLoaded('author') ? $a->author : $a->author()->first();
-
-        return [
-            'id' => $a->id,
-            'title' => $a->title,
-            'content' => $a->content,
-            'category' => ucfirst($a->type),
-            'status' => ucfirst($a->status),
-            'publishedAt' => $a->status === 'published' ? $a->updated_at?->format('Y-m-d') : null,
-            'scheduledAt' => $a->scheduled_for?->format('Y-m-d'),
-            'createdAt' => $a->created_at->format('Y-m-d'),
-            'author' => [
-                'id' => $author?->id,
-                'name' => $author ? trim($author->first_name.' '.$author->last_name) : 'Unknown',
-            ],
-        ];
     }
 }
