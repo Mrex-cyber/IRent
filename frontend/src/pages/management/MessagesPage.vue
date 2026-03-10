@@ -247,24 +247,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/store/auth'
 import SearchField from '@/components/SearchField.vue'
-
-interface Message {
-  id: number
-  senderName: string
-  senderRole: string
-  content: string
-  category: string
-  date: string
-  building?: string
-  apartment?: string
-}
-
-interface ConversationMessage {
-  id: number
-  content: string
-  timestamp: string
-  sent: boolean
-}
+import apiClient from '@/services/api/client'
+import type { Message, ConversationMessage } from '@/types/message'
 
 const authStore = useAuthStore()
 const messages = ref<Message[]>([])
@@ -369,65 +353,21 @@ const selectMessage = (message: Message) => {
 
 const fetchMessages = async () => {
   try {
-    const response = await fetch('/api/messages')
-    if (response.ok) {
-      messages.value = await response.json()
-    } else {
-      loadMockMessages()
-    }
+    const response = await apiClient.get('/management/messages')
+    messages.value = response.data
   } catch (error) {
     console.error('Fetch messages error:', error)
-    loadMockMessages()
+    messages.value = []
   }
 }
 
 const fetchConversation = async (messageId: number) => {
   try {
-    const response = await fetch(`/api/messages/${messageId}/conversation`)
-    if (response.ok) {
-      conversationMessages.value = await response.json()
-    } else {
-      const now = new Date()
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 20)
-      conversationMessages.value = [
-        {
-          id: 1,
-          content:
-            selectedMessage.value?.content ||
-            'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC.',
-          timestamp: selectedMessage.value?.date || new Date().toISOString(),
-          sent: false
-        },
-        {
-          id: 2,
-          content:
-            "Thank you for your message. I've reviewed your request and will get back to you shortly with an update.",
-          timestamp: today.toISOString(),
-          sent: true
-        }
-      ]
-    }
+    const response = await apiClient.get(`/management/messages/${messageId}/conversation`)
+    conversationMessages.value = response.data
   } catch (error) {
     console.error('Fetch conversation error:', error)
-    const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 20)
-    conversationMessages.value = [
-      {
-        id: 1,
-        content:
-          selectedMessage.value?.content ||
-          'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC.',
-        timestamp: selectedMessage.value?.date || new Date().toISOString(),
-        sent: false
-      },
-      {
-        id: 2,
-        content:
-          "Thank you for your message. I've reviewed your request and will get back to you shortly with an update.",
-        timestamp: today.toISOString(),
-        sent: true
-      }
-    ]
+    conversationMessages.value = []
   }
 }
 
@@ -435,20 +375,11 @@ const sendReply = async () => {
   if (!replyText.value.trim() || !selectedMessage.value) return
 
   try {
-    const response = await fetch(`/api/messages/${selectedMessage.value.id}/reply`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        content: replyText.value
-      })
+    await apiClient.post(`/management/messages/${selectedMessage.value.id}/reply`, {
+      content: replyText.value
     })
-
-    if (response.ok) {
-      replyText.value = ''
-      await fetchConversation(selectedMessage.value.id)
-    }
+    replyText.value = ''
+    await fetchConversation(selectedMessage.value.id)
   } catch (error) {
     console.error('Send reply error:', error)
   }
@@ -470,44 +401,6 @@ const createGroup = () => {
 const sendBroadcast = () => {
   console.log('Send broadcast')
   showBroadcastDialog.value = false
-}
-
-const loadMockMessages = () => {
-  messages.value = [
-    {
-      id: 1,
-      senderName: 'Tom Smith',
-      senderRole: 'Condominium member',
-      content:
-        'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC.',
-      category: 'Suggestions and complaints',
-      date: '2024-07-01',
-      building: 'Building A',
-      apartment: 'A-302'
-    },
-    {
-      id: 2,
-      senderName: 'Tom Smith',
-      senderRole: 'Condominium member',
-      content:
-        'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC.',
-      category: 'Legal Matter',
-      date: '2024-07-01',
-      building: 'Building A',
-      apartment: 'A-302'
-    },
-    {
-      id: 3,
-      senderName: 'Tom Smith',
-      senderRole: 'Condominium member',
-      content:
-        'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC.',
-      category: 'Suggestions and complaints',
-      date: '2024-07-01',
-      building: 'Building A',
-      apartment: 'A-302'
-    }
-  ]
 }
 
 onMounted(() => {
@@ -543,14 +436,12 @@ onMounted(() => {
   font-weight: 500;
   color: #212121;
   margin: 0 0 0.5rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .page-subtitle {
   font-size: 1rem;
   color: #757575;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .header-actions {
@@ -567,13 +458,12 @@ onMounted(() => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  border: 0.125rem solid #204ef6;
+  border: 0.125rem solid var(--color-brand);
 }
 
 .action-button.outline {
   background-color: #ffffff;
-  color: #204ef6;
+  color: var(--color-brand);
 }
 
 .action-button.outline:hover {
@@ -581,7 +471,7 @@ onMounted(() => {
 }
 
 .action-button.primary {
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
   border: none;
 }
@@ -605,15 +495,14 @@ onMounted(() => {
 
 .filter-button {
   padding: 0.5rem 1rem;
-  border: 0.125rem solid #204ef6;
+  border: 0.125rem solid var(--color-brand);
   background-color: #ffffff;
-  color: #204ef6;
+  color: var(--color-brand);
   border-radius: 1.5rem;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .filter-button:hover {
@@ -621,7 +510,7 @@ onMounted(() => {
 }
 
 .filter-button.active {
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
 }
 
@@ -657,17 +546,16 @@ onMounted(() => {
   color: #757575;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   text-transform: uppercase;
 }
 
 .tab:hover {
-  color: #204ef6;
+  color: var(--color-brand);
 }
 
 .tab.active {
-  color: #204ef6;
-  border-bottom-color: #204ef6;
+  color: var(--color-brand);
+  border-bottom-color: var(--color-brand);
 }
 
 .messages-list {
@@ -720,7 +608,6 @@ onMounted(() => {
 .message-name {
   font-weight: 600;
   color: #212121;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .message-tag {
@@ -729,7 +616,6 @@ onMounted(() => {
   font-size: 0.75rem;
   font-weight: 500;
   white-space: nowrap;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .tag-blue {
@@ -762,7 +648,6 @@ onMounted(() => {
   color: #616161;
   line-height: 1.5;
   margin: 0 0 0.5rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .message-footer {
@@ -770,12 +655,11 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   font-size: 0.75rem;
-  color: #204ef6;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--color-brand);
 }
 
 .message-role {
-  color: #204ef6;
+  color: var(--color-brand);
 }
 
 .message-date {
@@ -786,7 +670,6 @@ onMounted(() => {
   padding: 2rem;
   text-align: center;
   color: #9e9e9e;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .right-panel {
@@ -811,7 +694,6 @@ onMounted(() => {
 
 .empty-conversation p {
   font-size: 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .conversation-view {
@@ -859,14 +741,12 @@ onMounted(() => {
   font-size: 1.125rem;
   font-weight: 600;
   color: #212121;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .conversation-location {
   margin: 0;
   font-size: 0.875rem;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .conversation-tag {
@@ -874,7 +754,6 @@ onMounted(() => {
   border-radius: 1rem;
   font-size: 0.75rem;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .conversation-messages {
@@ -920,7 +799,6 @@ onMounted(() => {
   border-radius: 0.75rem;
   font-size: 0.875rem;
   line-height: 1.5;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   word-wrap: break-word;
 }
 
@@ -930,7 +808,7 @@ onMounted(() => {
 }
 
 .sent-bubble {
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
 }
 
@@ -940,11 +818,10 @@ onMounted(() => {
   gap: 0.5rem;
   margin-top: 0.5rem;
   font-size: 0.75rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .message-role {
-  color: #204ef6;
+  color: var(--color-brand);
   font-weight: 500;
 }
 
@@ -964,7 +841,7 @@ onMounted(() => {
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -1001,11 +878,10 @@ onMounted(() => {
   border-radius: 1.5rem;
   outline: none;
   font-size: 0.875rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .conversation-input input:focus {
-  border-color: #204ef6;
+  border-color: var(--color-brand);
 }
 
 .conversation-input input::placeholder {
@@ -1016,7 +892,7 @@ onMounted(() => {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
   border: none;
   display: flex;

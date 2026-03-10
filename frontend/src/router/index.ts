@@ -9,6 +9,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/auth',
+    meta: { requiresGuest: true },
     component: () => import('@/layouts/AuthLayout.vue'),
     children: [
       {
@@ -25,9 +26,9 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/management',
+    meta: { requiresAuth: true },
     component: () => import('@/layouts/ManagementLayout.vue'),
     redirect: '/management/news',
-    meta: { requiresAdmin: true },
     children: [
       {
         path: 'news',
@@ -78,7 +79,21 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore()
+
+  if (authStore.token && !authStore.user) {
+    await authStore.fetchUser()
+  }
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    return next({ name: 'Login', query: { redirect: to.fullPath } })
+  }
+
+  if (to.meta.requiresGuest && authStore.isAuthenticated) {
+    return next({ path: '/management/news' })
+  }
+
   next()
 })
 

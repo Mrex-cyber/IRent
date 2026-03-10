@@ -31,7 +31,7 @@
               v-for="category in categories"
               :key="category"
               :class="['filter-button', { active: selectedCategory === category }]"
-              @click="selectCategory(category)"
+              @click="selectedCategory = category"
             >
               {{ category }}
             </button>
@@ -192,24 +192,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useAuthStore } from '@/store/auth'
+import apiClient from '@/services/api/client'
+import SearchField from '@/components/SearchField.vue'
+import type { Announcement } from '@/types/announcement'
 
-interface Announcement {
-  id: number
-  title: string
-  content: string
-  category: string
-  status: string
-  publishedAt: string | null
-  scheduledAt: string | null
-  createdAt: string
-  author: {
-    id: number
-    name: string
-  }
-}
-
-const authStore = useAuthStore()
 const announcements = ref<Announcement[]>([])
 const searchQuery = ref('')
 const selectedCategory = ref('All')
@@ -269,108 +255,14 @@ const truncateContent = (content: string) => {
   return content.length > 150 ? content.substring(0, 150) + '...' : content
 }
 
-const selectCategory = (category: string) => {
-  selectedCategory.value = category
-}
-
-const handleSearch = () => {}
-
-const mockAnnouncements: Announcement[] = [
-  {
-    id: 1,
-    title: 'Annual General Meeting - November 2024',
-    content:
-      'Dear residents, we are pleased to announce the Annual General Meeting will be held on November 30th, 2024 at 6:00 PM in the community hall. All apartment owners are encouraged to attend. We will discuss important matters including building maintenance, financial reports, and upcoming projects. Please RSVP by November 25th.',
-    category: 'Events',
-    status: 'Published',
-    publishedAt: '2024-11-15',
-    scheduledAt: null,
-    createdAt: '2024-11-15',
-    author: {
-      id: 1,
-      name: 'Tom Smith'
-    }
-  },
-  {
-    id: 2,
-    title: 'Water System Maintenance - Building A',
-    content:
-      'Please be informed that water supply will be temporarily interrupted in Building A on November 28th from 9:00 AM to 2:00 PM for routine maintenance work. We apologize for any inconvenience and appreciate your understanding. Please store water in advance if needed.',
-    category: 'Maintenance',
-    status: 'Scheduled',
-    publishedAt: null,
-    scheduledAt: '2024-11-27',
-    createdAt: '2024-11-20',
-    author: {
-      id: 1,
-      name: 'Tom Smith'
-    }
-  },
-  {
-    id: 3,
-    title: 'New Parking Regulations',
-    content:
-      'Starting December 1st, new parking regulations will be in effect. All residents must register their vehicles with the management office. Visitor parking will be limited to 2 hours. Please review the complete parking policy document available at the management office.',
-    category: 'General',
-    status: 'Draft',
-    publishedAt: null,
-    scheduledAt: null,
-    createdAt: '2024-11-18',
-    author: {
-      id: 1,
-      name: 'Tom Smith'
-    }
-  },
-  {
-    id: 4,
-    title: 'Holiday Decoration Guidelines',
-    content:
-      'As we approach the holiday season, please review the decoration guidelines for common areas and balconies. All decorations must be fire-resistant and securely attached. Please remove decorations by January 15th. Happy holidays!',
-    category: 'General',
-    status: 'Published',
-    publishedAt: '2024-11-22',
-    scheduledAt: null,
-    createdAt: '2024-11-22',
-    author: {
-      id: 1,
-      name: 'Tom Smith'
-    }
-  },
-  {
-    id: 5,
-    title: 'Financial Report - Q3 2024',
-    content:
-      'The quarterly financial report for Q3 2024 is now available for review. All residents can access the report through the resident portal or request a printed copy from the management office. The report includes budget allocations, maintenance expenses, and reserve fund status.',
-    category: 'Financial',
-    status: 'Published',
-    publishedAt: '2024-11-10',
-    scheduledAt: null,
-    createdAt: '2024-11-10',
-    author: {
-      id: 1,
-      name: 'Tom Smith'
-    }
-  },
-  {
-    id: 6,
-    title: 'Fire Safety Drill - December 5th',
-    content:
-      'A mandatory fire safety drill will be conducted on December 5th at 10:00 AM. All residents are required to participate. Please familiarize yourself with the evacuation routes posted on each floor. Your cooperation ensures the safety of all residents.',
-    category: 'Safety',
-    status: 'Scheduled',
-    publishedAt: null,
-    scheduledAt: '2024-12-05',
-    createdAt: '2024-11-25',
-    author: {
-      id: 1,
-      name: 'Tom Smith'
-    }
-  }
-]
-
 const fetchAnnouncements = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-  announcements.value = [...mockAnnouncements]
+  try {
+    const response = await apiClient.get('/management/announcements')
+    announcements.value = response.data
+  } catch (error) {
+    console.error('Fetch announcements error:', error)
+    announcements.value = []
+  }
 }
 
 const openCreateDialog = () => {
@@ -403,42 +295,25 @@ const closeDialog = () => {
 }
 
 const saveAnnouncement = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-
-  if (editingAnnouncement.value) {
-    const index = announcements.value.findIndex((a) => a.id === editingAnnouncement.value!.id)
-    if (index !== -1) {
-      announcements.value[index] = {
-        ...announcements.value[index],
-        title: formData.value.title,
-        content: formData.value.content,
-        category: formData.value.category,
-        status: formData.value.status,
-        scheduledAt: formData.value.scheduledAt || null,
-        publishedAt:
-          formData.value.status === 'Published' ? new Date().toISOString().split('T')[0] : null
-      }
-    }
-  } else {
-    const newAnnouncement: Announcement = {
-      id: Math.max(...announcements.value.map((a) => a.id), 0) + 1,
-      title: formData.value.title,
-      content: formData.value.content,
-      category: formData.value.category,
-      status: formData.value.status,
-      publishedAt:
-        formData.value.status === 'Published' ? new Date().toISOString().split('T')[0] : null,
-      scheduledAt: formData.value.scheduledAt || null,
-      createdAt: new Date().toISOString().split('T')[0],
-      author: {
-        id: parseInt(authStore.user?.id || '1'),
-        name: `${authStore.user?.firstName || 'Admin'} ${authStore.user?.lastName || 'User'}`
-      }
-    }
-    announcements.value.push(newAnnouncement)
+  const payload = {
+    title: formData.value.title,
+    content: formData.value.content,
+    type: formData.value.category.toLowerCase(),
+    status: formData.value.status.toLowerCase(),
+    scheduled_for: formData.value.scheduledAt || null
   }
 
-  closeDialog()
+  try {
+    if (editingAnnouncement.value) {
+      await apiClient.put(`/management/announcements/${editingAnnouncement.value.id}`, payload)
+    } else {
+      await apiClient.post('/management/announcements', payload)
+    }
+    await fetchAnnouncements()
+    closeDialog()
+  } catch (error) {
+    console.error('Save announcement error:', error)
+  }
 }
 
 const deleteAnnouncement = async (id: number) => {
@@ -446,8 +321,12 @@ const deleteAnnouncement = async (id: number) => {
     return
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 200))
-  announcements.value = announcements.value.filter((a) => a.id !== id)
+  try {
+    await apiClient.delete(`/management/announcements/${id}`)
+    announcements.value = announcements.value.filter((a) => a.id !== id)
+  } catch (error) {
+    console.error('Delete announcement error:', error)
+  }
 }
 
 onMounted(() => {
@@ -483,14 +362,12 @@ onMounted(() => {
   font-weight: 500;
   color: #212121;
   margin: 0 0 0.5rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .page-subtitle {
   font-size: 1rem;
   color: #757575;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .new-post-button {
@@ -498,14 +375,13 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   border: none;
   border-radius: 20px;
   color: #ffffff;
   font-weight: 500;
   cursor: pointer;
   transition: transform 0.2s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .new-post-button:hover {
@@ -527,15 +403,14 @@ onMounted(() => {
 
 .filter-button {
   padding: 0.5rem 1rem;
-  border: 0.125rem solid #204ef6;
+  border: 0.125rem solid var(--color-brand);
   background-color: #ffffff;
-  color: #204ef6;
+  color: var(--color-brand);
   border-radius: 1.5rem;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .filter-button:hover {
@@ -543,7 +418,7 @@ onMounted(() => {
 }
 
 .filter-button.active {
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
 }
 
@@ -579,7 +454,6 @@ onMounted(() => {
   border-radius: 5px;
   font-size: 0.75rem;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .category-general {
@@ -647,7 +521,6 @@ onMounted(() => {
   font-weight: 600;
   color: #212121;
   margin: 0 0 0.75rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .card-content {
@@ -655,7 +528,6 @@ onMounted(() => {
   color: #616161;
   line-height: 1.5;
   margin: 0 0 1rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .card-footer {
@@ -678,11 +550,10 @@ onMounted(() => {
   gap: 0.5rem;
   font-size: 0.875rem;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .date-item.scheduled {
-  color: #204ef6;
+  color: var(--color-brand);
 }
 
 .date-item svg {
@@ -692,14 +563,12 @@ onMounted(() => {
 .card-author {
   font-size: 0.875rem;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .empty-state {
   text-align: center;
   padding: 3rem;
   color: #9e9e9e;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 @media (max-width: 48rem) {

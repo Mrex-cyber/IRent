@@ -1,4 +1,5 @@
 import axios from 'axios'
+import type { ApiErrorResponse } from '@/types/api'
 
 const apiClient = axios.create({
   baseURL: '/api',
@@ -32,5 +33,10 @@ apiClient.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+export function getApiErrorMessage(error: unknown): string {
+  const data = (error as { response?: { data?: ApiErrorResponse } })?.response?.data
+  return data?.message ?? 'Request failed.'
+}
 
 export default apiClient

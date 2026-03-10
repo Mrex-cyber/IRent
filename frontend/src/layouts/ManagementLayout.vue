@@ -301,7 +301,6 @@ const user = computed(() => authStore.user)
 .nav-label {
   font-size: 1rem;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .user-profile {
@@ -309,7 +308,7 @@ const user = computed(() => authStore.user)
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   border-radius: 1rem 1rem 0 0;
   margin-top: auto;
   margin-left: -1rem;
@@ -346,14 +345,12 @@ const user = computed(() => authStore.user)
 .profile-name {
   font-size: 1rem;
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .profile-role {
   font-size: 0.875rem;
   font-weight: 400;
   opacity: 0.9;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 @media (max-width: 48rem) {

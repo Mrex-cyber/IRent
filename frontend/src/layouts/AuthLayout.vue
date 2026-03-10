@@ -6,7 +6,7 @@
           <v-col cols="12" sm="8" md="4">
             <v-card class="elevation-12">
               <v-toolbar dark color="primary">
-                <button class="back-button" @click="$router.push('/menu')">
+                <button class="back-button" @click="$router.push('/management/news')">
                   <svg
                     width="24"
                     height="24"

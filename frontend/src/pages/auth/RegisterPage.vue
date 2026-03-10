@@ -64,6 +64,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { getApiErrorMessage } from '@/services/api/client'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -96,34 +97,19 @@ const roleOptions = [
 ]
 
 const handleRegister = async () => {
-  try {
-    isLoading.value = true
-    Object.keys(errors).forEach((key) => {
-      errors[key as keyof typeof errors] = ''
-    })
+  isLoading.value = true
+  errors.firstName = ''
+  errors.lastName = ''
+  errors.email = ''
+  errors.password = ''
+  errors.passwordConfirmation = ''
+  errors.role = ''
 
+  try {
     await authStore.register(form)
     router.push('/management/news')
-  } catch (error: any) {
-    console.error('Registration failed:', error)
-
-    // Handle validation errors
-    if (error.message) {
-      try {
-        const validationErrors = JSON.parse(error.message)
-        Object.keys(validationErrors).forEach((key) => {
-          const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
-          if (errors.hasOwnProperty(camelKey)) {
-            errors[camelKey as keyof typeof errors] = Array.isArray(validationErrors[key])
-              ? validationErrors[key].join(', ')
-              : validationErrors[key]
-          }
-        })
-      } catch {
-        // If not JSON, show general error
-        errors.password = error.message || 'Registration failed. Please try again.'
-      }
-    }
+  } catch (error: unknown) {
+    errors.password = getApiErrorMessage(error)
   } finally {
     isLoading.value = false
   }

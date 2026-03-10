@@ -360,14 +360,12 @@ onUnmounted(() => {
   font-weight: 700;
   color: #212121;
   margin: 0 0 0.5rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .page-subtitle {
   font-size: 1rem;
   color: #757575;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .search-section {
@@ -406,15 +404,14 @@ onUnmounted(() => {
 
 .filter-button {
   padding: 0.5rem 1.5rem;
-  border: 0.125rem solid #204ef6;
+  border: 0.125rem solid var(--color-brand);
   background-color: #ffffff;
-  color: #204ef6;
+  color: var(--color-brand);
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .filter-button:hover {
@@ -422,7 +419,7 @@ onUnmounted(() => {
 }
 
 .filter-button.active {
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
 }
 
@@ -449,7 +446,6 @@ onUnmounted(() => {
   font-weight: 700;
   color: #212121;
   margin: 0 0 1.5rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   flex-shrink: 0;
 }
 
@@ -492,7 +488,6 @@ onUnmounted(() => {
   font-weight: 600;
   font-size: 0.875rem;
   flex-shrink: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .member-info-small {
@@ -506,13 +501,11 @@ onUnmounted(() => {
   font-size: 0.9375rem;
   font-weight: 600;
   color: #212121;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .member-email-small {
   font-size: 0.875rem;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .member-tags-small {
@@ -526,7 +519,6 @@ onUnmounted(() => {
   border-radius: 5px;
   font-size: 0.75rem;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .tag-owner {
@@ -551,7 +543,6 @@ onUnmounted(() => {
   font-weight: 500;
   background-color: #f3f4f6;
   color: #374151;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .right-panel {
@@ -596,7 +587,6 @@ onUnmounted(() => {
   font-weight: 600;
   font-size: 1.5rem;
   flex-shrink: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .member-header-info {
@@ -608,7 +598,6 @@ onUnmounted(() => {
   font-weight: 700;
   color: #212121;
   margin: 0 0 0.75rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .member-role-tags {
@@ -624,7 +613,6 @@ onUnmounted(() => {
   font-weight: 500;
   background-color: #c8daff;
   color: #1e40af;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .contact-info {
@@ -639,7 +627,6 @@ onUnmounted(() => {
   gap: 0.75rem;
   font-size: 0.9375rem;
   color: #212121;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .contact-item svg {
@@ -652,7 +639,6 @@ onUnmounted(() => {
   font-weight: 600;
   color: #212121;
   margin: 0 0 1rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .activity-stats {
@@ -668,7 +654,7 @@ onUnmounted(() => {
 }
 
 .stat-card.blue {
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
 }
 
@@ -686,13 +672,11 @@ onUnmounted(() => {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .stat-label {
   font-size: 0.875rem;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .statistics-content {
@@ -710,7 +694,6 @@ onUnmounted(() => {
 .stat-item-label {
   font-size: 0.875rem;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .progress-bar-container {
@@ -731,7 +714,6 @@ onUnmounted(() => {
   font-size: 0.9375rem;
   font-weight: 600;
   color: #212121;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .action-buttons {
@@ -748,13 +730,12 @@ onUnmounted(() => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .action-button.outlined {
-  border: 0.125rem solid #204ef6;
+  border: 0.125rem solid var(--color-brand);
   background-color: #ffffff;
-  color: #204ef6;
+  color: var(--color-brand);
 }
 
 .action-button.outlined:hover {
@@ -763,7 +744,7 @@ onUnmounted(() => {
 
 .action-button.primary {
   border: none;
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
 }
 
@@ -777,7 +758,6 @@ onUnmounted(() => {
   justify-content: center;
   height: 100%;
   color: #9e9e9e;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 @media (max-width: 48rem) {

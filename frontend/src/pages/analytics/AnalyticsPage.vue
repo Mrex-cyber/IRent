@@ -251,7 +251,7 @@
                     cy="90"
                     r="80"
                     fill="none"
-                    stroke="#204EF6"
+                    stroke="var(--color-brand)"
                     stroke-width="30"
                     stroke-dasharray="188.4"
                     stroke-dashoffset="131.88"
@@ -488,7 +488,6 @@ const selectedDate = ref(new Date().toISOString().split('T')[0])
   text-transform: uppercase;
   letter-spacing: 0.0625rem;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .filters {
@@ -509,7 +508,6 @@ const selectedDate = ref(new Date().toISOString().split('T')[0])
   cursor: pointer;
   font-size: 1rem;
   color: #000;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .filter-dropdown:hover {
@@ -536,13 +534,11 @@ const selectedDate = ref(new Date().toISOString().split('T')[0])
   font-size: 0.8125rem;
   color: #666;
   margin-bottom: 0.5rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .card-value {
   font-size: 1.375rem;
   font-weight: 700;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .card-value .highlight {
@@ -577,7 +573,6 @@ const selectedDate = ref(new Date().toISOString().split('T')[0])
   font-weight: 700;
   color: #000;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .task-dropdown {
@@ -591,7 +586,6 @@ const selectedDate = ref(new Date().toISOString().split('T')[0])
   cursor: pointer;
   font-size: 0.875rem;
   color: #000;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .task-content {
@@ -613,7 +607,6 @@ const selectedDate = ref(new Date().toISOString().split('T')[0])
   gap: 0.625rem;
   font-size: 0.875rem;
   color: #000;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .legend-circle {
@@ -627,7 +620,7 @@ const selectedDate = ref(new Date().toISOString().split('T')[0])
 }
 
 .legend-circle.in-progress {
-  background-color: #204ef6;
+  background-color: var(--color-brand);
 }
 
 .legend-circle.completed {
@@ -665,14 +658,12 @@ const selectedDate = ref(new Date().toISOString().split('T')[0])
   font-size: 1.75rem;
   font-weight: 700;
   color: #1976d2;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .chart-label {
   font-size: 0.75rem;
   color: #666;
   margin-top: -0.25rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .chart-navigation {

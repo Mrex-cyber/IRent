@@ -284,13 +284,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/store/auth'
-
-interface Activity {
-  id: number
-  description: string
-  date: string
-  status: string
-}
+import apiClient from '@/services/api/client'
+import type { Activity } from '@/types/user-profile'
 
 const authStore = useAuthStore()
 const showEditDialog = ref(false)
@@ -373,18 +368,9 @@ const openEditDialog = () => {
 
 const saveProfile = async () => {
   try {
-    const response = await fetch('/api/users/profile', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(editForm.value)
-    })
-
-    if (response.ok) {
-      Object.assign(userProfile.value, editForm.value)
-      showEditDialog.value = false
-    }
+    const response = await apiClient.put('/management/profile', editForm.value)
+    Object.assign(userProfile.value, response.data)
+    showEditDialog.value = false
   } catch (error) {
     console.error('Save profile error:', error)
   }
@@ -392,13 +378,11 @@ const saveProfile = async () => {
 
 const fetchUserProfile = async () => {
   try {
-    const response = await fetch('/api/users/profile')
-    if (response.ok) {
-      const data = await response.json()
-      Object.assign(userProfile.value, data)
-      workloadStats.value = data.workloadStats || workloadStats.value
-      activityHistory.value = data.activityHistory || activityHistory.value
-    }
+    const response = await apiClient.get('/management/profile')
+    const data = response.data
+    Object.assign(userProfile.value, data)
+    workloadStats.value = data.workloadStats || workloadStats.value
+    activityHistory.value = data.activityHistory || activityHistory.value
   } catch (error) {
     console.error('Fetch user profile error:', error)
   }
@@ -437,26 +421,23 @@ onMounted(() => {
   font-weight: 500;
   color: #212121;
   margin: 0 0 0.5rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .page-subtitle {
   font-size: 1rem;
   color: #757575;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .edit-profile-button {
   padding: 0.75rem 1.5rem;
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   border: none;
   border-radius: 0.5rem;
   color: #ffffff;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -493,7 +474,6 @@ onMounted(() => {
   font-weight: 700;
   color: #212121;
   margin: 0 0 1rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .profile-info-content {
@@ -544,7 +524,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .field-label {
@@ -559,7 +538,7 @@ onMounted(() => {
 }
 
 .role-link {
-  color: #204ef6;
+  color: var(--color-brand);
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
@@ -575,7 +554,6 @@ onMounted(() => {
   gap: 0.75rem;
   padding: 0.75rem 0;
   border-bottom: 0.0625rem solid #e0e0e0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .contact-item:last-child {
@@ -600,15 +578,14 @@ onMounted(() => {
 
 .entrance-button {
   aspect-ratio: 1;
-  border: 0.125rem solid #204ef6;
+  border: 0.125rem solid var(--color-brand);
   background-color: #ffffff;
-  color: #204ef6;
+  color: var(--color-brand);
   border-radius: 0.5rem;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .entrance-button:hover {
@@ -616,7 +593,7 @@ onMounted(() => {
 }
 
 .entrance-button.active {
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
 }
 
@@ -632,7 +609,6 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.5rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .workload-label {
@@ -659,7 +635,7 @@ onMounted(() => {
 }
 
 .workload-fill.blue {
-  background-color: #204ef6;
+  background-color: var(--color-brand);
 }
 
 .workload-fill.green {
@@ -691,7 +667,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .quick-info-label {
@@ -731,7 +706,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .activity-description {
@@ -750,11 +724,10 @@ onMounted(() => {
   border-radius: 1rem;
   font-size: 0.75rem;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .activity-link {
-  color: #204ef6;
+  color: var(--color-brand);
   text-decoration: none;
   font-weight: 500;
 }

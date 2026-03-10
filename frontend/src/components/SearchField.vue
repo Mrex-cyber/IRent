@@ -54,7 +54,6 @@ defineEmits<{
   background: transparent;
   outline: none;
   font-size: 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .search-bar input::placeholder {

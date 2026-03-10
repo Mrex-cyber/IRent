@@ -165,21 +165,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useAuthStore } from '@/store/auth'
+import type { StaffMember } from '@/types/task'
 
-interface StaffMember {
-  id: number
-  name: string
-  role: string
-  avatar: string
-  resolved: number
-  inProgress: number
-  avgTime: string
-  total: number
-  workload: number
-}
-
-const authStore = useAuthStore()
 const selectedPeriod = ref('Week')
 const timePeriods = ['Today', 'Week', 'Month', 'Year']
 
@@ -203,58 +190,9 @@ const selectPeriod = (period: string) => {
   fetchTaskStatistics(period)
 }
 
-const fetchTaskStatistics = async (period: string) => {
-  try {
-    const response = await fetch(`/api/tasks/statistics?period=${period}`)
-    if (response.ok) {
-      const data = await response.json()
-      statistics.value = data.statistics
-      staffMembers.value = data.staffMembers
-    } else {
-      loadMockData()
-    }
-  } catch (error) {
-    console.error('Fetch task statistics error:', error)
-    loadMockData()
-  }
-}
-
-const loadMockData = () => {
-  staffMembers.value = [
-    {
-      id: 1,
-      name: 'Tom Smith',
-      role: 'Chairman',
-      avatar: '😊',
-      resolved: 142,
-      inProgress: 14,
-      avgTime: '2.3 hours',
-      total: 156,
-      workload: 85
-    },
-    {
-      id: 2,
-      name: 'Sarah Johnson',
-      role: 'Building Manager',
-      avatar: '👩',
-      resolved: 120,
-      inProgress: 14,
-      avgTime: '3.1 hours',
-      total: 134,
-      workload: 72
-    },
-    {
-      id: 3,
-      name: 'Michael Chen',
-      role: 'Maintenance Coordinator',
-      avatar: '👓',
-      resolved: 95,
-      inProgress: 17,
-      avgTime: '4.2 hours',
-      total: 112,
-      workload: 68
-    }
-  ]
+const fetchTaskStatistics = async (_period: string) => {
+  staffMembers.value = []
+  statistics.value = { totalRequests: 0, resolved: 0, unresolved: 0, avgResponseTime: '-' }
 }
 
 onMounted(() => {
@@ -283,14 +221,12 @@ onMounted(() => {
   font-weight: 500;
   color: #212121;
   margin: 0 0 0.5rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .page-subtitle {
   font-size: 1rem;
   color: #757575;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .time-period-selector {
@@ -301,15 +237,14 @@ onMounted(() => {
 
 .period-button {
   padding: 0.75rem 1.5rem;
-  border: 0.125rem solid #204ef6;
+  border: 0.125rem solid var(--color-brand);
   background-color: #ffffff;
-  color: #204ef6;
+  color: var(--color-brand);
   border-radius: 1.5rem;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .period-button:hover {
@@ -317,7 +252,7 @@ onMounted(() => {
 }
 
 .period-button.active {
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
 }
 
@@ -377,13 +312,11 @@ onMounted(() => {
   font-weight: 700;
   color: #212121;
   margin-bottom: 0.25rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .stat-label {
   font-size: 0.875rem;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .stat-trend {
@@ -393,7 +326,6 @@ onMounted(() => {
   margin-top: 0.5rem;
   font-size: 0.75rem;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .stat-trend.positive {
@@ -416,7 +348,6 @@ onMounted(() => {
   font-weight: 700;
   color: #212121;
   margin: 0 0 1.5rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .staff-list {
@@ -474,13 +405,11 @@ onMounted(() => {
   font-weight: 700;
   color: #212121;
   margin-bottom: 0.25rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .staff-role {
   font-size: 0.875rem;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .staff-metrics {
@@ -499,7 +428,6 @@ onMounted(() => {
   font-size: 0.875rem;
   font-weight: 500;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .metrics-grid {
@@ -523,13 +451,11 @@ onMounted(() => {
 .metric-label {
   font-size: 0.75rem;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .metric-value {
   font-size: 0.875rem;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .metric-value.resolved {
@@ -541,7 +467,7 @@ onMounted(() => {
 }
 
 .metric-value.avg-time {
-  color: #204ef6;
+  color: var(--color-brand);
 }
 
 .workload-bar-container {
@@ -555,7 +481,6 @@ onMounted(() => {
   font-size: 0.875rem;
   color: #212121;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .workload-bar {
@@ -590,7 +515,6 @@ onMounted(() => {
   color: #212121;
   min-width: 3rem;
   text-align: right;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 @media (max-width: 48rem) {

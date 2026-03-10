@@ -4,6 +4,10 @@
       <h2>Sign In</h2>
     </v-card-title>
 
+    <v-alert v-if="errorMessage" type="error" class="mb-4" closable>
+      {{ errorMessage }}
+    </v-alert>
+
     <v-form @submit.prevent="handleLogin">
       <v-text-field
         v-model="form.email"
@@ -34,6 +38,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { getApiErrorMessage } from '@/services/api/client'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -49,17 +54,19 @@ const errors = reactive({
 })
 
 const isLoading = ref(false)
+const errorMessage = ref('')
 
 const handleLogin = async () => {
   try {
     isLoading.value = true
+    errorMessage.value = ''
     errors.email = ''
     errors.password = ''
 
     await authStore.login(form)
     router.push('/management/news')
   } catch (error) {
-    console.error('Login failed:', error)
+    errorMessage.value = getApiErrorMessage(error)
   } finally {
     isLoading.value = false
   }

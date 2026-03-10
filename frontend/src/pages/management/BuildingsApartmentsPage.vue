@@ -242,48 +242,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useAuthStore } from '@/store/auth'
+import type { Building, Entrance, Apartment } from '@/types/building'
 
-interface Building {
-  id: number
-  name: string
-}
-
-interface Entrance {
-  id: number
-  name: string
-  buildingId: number
-  apartmentCount: number
-}
-
-interface Apartment {
-  id: number
-  number: string
-  type: string
-  size: number
-  bedrooms: number
-  bathrooms: number
-  status: string
-  floor: number
-  owner?: string
-  tenant?: string
-  amenities?: string[]
-  entranceId: number
-  pendingCount?: number
-  ownerName?: string
-  ownerPhone?: string
-  ownerEmail?: string
-  requestsTotal?: number
-  requestsPending?: number
-  requestsResolved?: number
-  waterMeter?: string
-  electricityMeter?: string
-  gasMeter?: string
-  billingAmount?: number
-  dueDate?: string
-}
-
-const authStore = useAuthStore()
 const buildings = ref<Building[]>([])
 const selectedBuilding = ref<Building | null>(null)
 const entrances = ref<Entrance[]>([])
@@ -309,304 +269,15 @@ const selectApartment = (apartment: Apartment) => {
 }
 
 const fetchBuildings = async () => {
-  try {
-    const response = await fetch('/api/buildings')
-    if (response.ok) {
-      buildings.value = await response.json()
-      if (buildings.value.length > 0 && !selectedBuilding.value) {
-        selectBuilding(buildings.value[0])
-      }
-    } else {
-      loadMockBuildings()
-    }
-  } catch (error) {
-    console.error('Fetch buildings error:', error)
-    loadMockBuildings()
-  }
+  buildings.value = []
 }
 
-const fetchEntrances = async (buildingId: number) => {
-  try {
-    const response = await fetch(`/api/buildings/${buildingId}/entrances`)
-    if (response.ok) {
-      entrances.value = await response.json()
-    } else {
-      loadMockEntrances(buildingId)
-    }
-  } catch (error) {
-    console.error('Fetch entrances error:', error)
-    loadMockEntrances(buildingId)
-  }
+const fetchEntrances = async (_buildingId: number) => {
+  entrances.value = []
 }
 
-const fetchApartments = async (entranceId: number) => {
-  try {
-    const response = await fetch(`/api/entrances/${entranceId}/apartments`)
-    if (response.ok) {
-      apartments.value = await response.json()
-    } else {
-      loadMockApartments(entranceId)
-    }
-  } catch (error) {
-    console.error('Fetch apartments error:', error)
-    loadMockApartments(entranceId)
-  }
-}
-
-const loadMockBuildings = () => {
-  buildings.value = [
-    { id: 1, name: 'Building A' },
-    { id: 2, name: 'Building B' },
-    { id: 3, name: 'Building C' }
-  ]
-  if (buildings.value.length > 0) {
-    selectBuilding(buildings.value[0])
-  }
-}
-
-const loadMockEntrances = (buildingId: number) => {
-  entrances.value = [
-    { id: 1, name: 'Entrance 1', buildingId, apartmentCount: 12 },
-    { id: 2, name: 'Entrance 2', buildingId, apartmentCount: 12 },
-    { id: 3, name: 'Entrance 3', buildingId, apartmentCount: 12 },
-    { id: 4, name: 'Entrance 4', buildingId, apartmentCount: 12 }
-  ]
-}
-
-const loadMockApartments = (entranceId: number) => {
-  apartments.value = [
-    {
-      id: 1,
-      number: 'A-101',
-      type: '2BR',
-      size: 75,
-      bedrooms: 2,
-      bathrooms: 1,
-      status: 'Occupied',
-      floor: 1,
-      owner: 'John Doe',
-      tenant: 'Jane Smith',
-      amenities: ['Balcony', 'Parking'],
-      entranceId,
-      pendingCount: 2,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 2,
-      number: 'A-102',
-      type: '1BR',
-      size: 50,
-      bedrooms: 1,
-      bathrooms: 1,
-      status: 'Available',
-      floor: 1,
-      owner: 'John Doe',
-      amenities: ['Parking'],
-      entranceId,
-      pendingCount: 2,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 3,
-      number: 'A-103',
-      type: '2BR',
-      size: 75,
-      bedrooms: 2,
-      bathrooms: 1,
-      status: 'Occupied',
-      floor: 1,
-      owner: 'John Doe',
-      tenant: 'Jane Smith',
-      amenities: ['Balcony', 'Parking'],
-      entranceId,
-      pendingCount: 2,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 4,
-      number: 'A-104',
-      type: '2BR',
-      size: 75,
-      bedrooms: 2,
-      bathrooms: 1,
-      status: 'Occupied',
-      floor: 2,
-      owner: 'John Doe',
-      tenant: 'Jane Smith',
-      amenities: ['Balcony', 'Parking'],
-      entranceId,
-      pendingCount: 3,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 5,
-      number: 'A-105',
-      type: '1BR',
-      size: 50,
-      bedrooms: 1,
-      bathrooms: 1,
-      status: 'Available',
-      floor: 2,
-      owner: 'John Doe',
-      amenities: ['Parking'],
-      entranceId,
-      pendingCount: 3,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 6,
-      number: 'A-106',
-      type: '2BR',
-      size: 75,
-      bedrooms: 2,
-      bathrooms: 1,
-      status: 'Occupied',
-      floor: 2,
-      owner: 'John Doe',
-      tenant: 'Jane Smith',
-      amenities: ['Balcony', 'Parking'],
-      entranceId,
-      pendingCount: 3,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 7,
-      number: 'A-107',
-      type: '2BR',
-      size: 75,
-      bedrooms: 2,
-      bathrooms: 1,
-      status: 'Occupied',
-      floor: 3,
-      owner: 'John Doe',
-      tenant: 'Jane Smith',
-      amenities: ['Balcony', 'Parking'],
-      entranceId,
-      pendingCount: 2,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 8,
-      number: 'A-108',
-      type: '1BR',
-      size: 50,
-      bedrooms: 1,
-      bathrooms: 1,
-      status: 'Available',
-      floor: 3,
-      owner: 'John Doe',
-      amenities: ['Parking'],
-      entranceId,
-      pendingCount: 2,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 9,
-      number: 'A-109',
-      type: '3BR',
-      size: 100,
-      bedrooms: 3,
-      bathrooms: 2,
-      status: 'Occupied',
-      floor: 3,
-      owner: 'Mary Johnson',
-      tenant: 'Robert Brown',
-      amenities: ['Balcony', 'Parking', 'Storage'],
-      entranceId,
-      pendingCount: 0,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    }
-  ]
+const fetchApartments = async (_entranceId: number) => {
+  apartments.value = []
 }
 
 const editApartment = () => {
@@ -643,14 +314,12 @@ onMounted(() => {
   font-weight: 500;
   color: #212121;
   margin: 0 0 0.5rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .page-subtitle {
   font-size: 1rem;
   color: #757575;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .building-tabs {
@@ -661,15 +330,14 @@ onMounted(() => {
 
 .building-tab {
   padding: 0.75rem 1.5rem;
-  border: 0.125rem solid #204ef6;
+  border: 0.125rem solid var(--color-brand);
   background-color: #ffffff;
-  color: #204ef6;
+  color: var(--color-brand);
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .building-tab:hover {
@@ -677,7 +345,7 @@ onMounted(() => {
 }
 
 .building-tab.active {
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
 }
 
@@ -707,7 +375,6 @@ onMounted(() => {
   font-weight: 700;
   color: #212121;
   margin: 0 0 1rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .entrances-list {
@@ -767,11 +434,11 @@ onMounted(() => {
 }
 
 .apartment-card:hover {
-  border-color: #204ef6;
+  border-color: var(--color-brand);
 }
 
 .apartment-card.active {
-  border-color: #204ef6;
+  border-color: var(--color-brand);
   background-color: #e3f2fd;
 }
 
@@ -785,13 +452,11 @@ onMounted(() => {
   font-size: 1.125rem;
   font-weight: 600;
   color: #212121;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .apartment-floor {
   font-size: 0.875rem;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .apartment-pending {
@@ -803,14 +468,12 @@ onMounted(() => {
   font-size: 0.75rem;
   font-weight: 500;
   width: fit-content;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .entrance-name {
   font-size: 1rem;
   font-weight: 500;
   color: #212121;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .entrance-info {
@@ -822,7 +485,6 @@ onMounted(() => {
 
 .entrance-count {
   font-size: 0.875rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .empty-state {
@@ -831,7 +493,6 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   color: #9e9e9e;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .apartment-details-view {
@@ -854,7 +515,6 @@ onMounted(() => {
   font-weight: 700;
   color: #212121;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .apartment-floor-badge {
@@ -864,7 +524,6 @@ onMounted(() => {
   border-radius: 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .info-section-card {
@@ -914,7 +573,6 @@ onMounted(() => {
   color: #212121;
   margin: 0;
   line-height: 1.5rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .info-section-content {
@@ -927,13 +585,11 @@ onMounted(() => {
   font-size: 0.9375rem;
   font-weight: 500;
   color: #212121;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .owner-contact {
   font-size: 0.875rem;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .requests-stats {
@@ -967,13 +623,11 @@ onMounted(() => {
   font-size: 1.125rem;
   font-weight: 700;
   color: #212121;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .stat-label {
   font-size: 0.75rem;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .utility-meters {
@@ -986,7 +640,6 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .utility-label {
@@ -1015,7 +668,6 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .billing-label {
@@ -1036,7 +688,6 @@ onMounted(() => {
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: inline-block;
   width: fit-content;
   align-self: flex-start;
@@ -1063,14 +714,12 @@ onMounted(() => {
 .detail-label {
   font-size: 0.875rem;
   color: #757575;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .detail-value {
   font-size: 0.875rem;
   font-weight: 500;
   color: #212121;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .status-badge {
@@ -1099,7 +748,6 @@ onMounted(() => {
   font-weight: 600;
   color: #212121;
   margin: 0 0 0.75rem 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .amenities-list {
@@ -1114,7 +762,6 @@ onMounted(() => {
   color: #1565c0;
   border-radius: 1rem;
   font-size: 0.875rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .actions-section {
@@ -1132,12 +779,11 @@ onMounted(() => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   border: none;
 }
 
 .action-button.primary {
-  background-color: #204ef6;
+  background-color: var(--color-brand);
   color: #ffffff;
 }
 
