@@ -57,7 +57,7 @@ const handleLogin = async () => {
     errors.password = ''
 
     await authStore.login(form)
-    router.push('/dashboard')
+    router.push('/management/news')
   } catch (error) {
     console.error('Login failed:', error)
   } finally {

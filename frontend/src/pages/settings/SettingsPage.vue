@@ -1,7 +1,6 @@
 <template>
   <v-container fluid class="pa-0">
     <div class="settings-wrapper">
-      <TopNavbar />
       <v-container>
         <p>Settings page coming soon...</p>
       </v-container>
@@ -9,9 +8,7 @@
   </v-container>
 </template>
 
-<script setup lang="ts">
-import TopNavbar from '@/components/TopNavbar.vue'
-</script>
+<script setup lang="ts"></script>
 
 <style scoped>
 .settings-wrapper {
