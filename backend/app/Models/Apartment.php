@@ -42,4 +42,9 @@ class Apartment extends Model
     {
         return $this->hasOne(Invoice::class)->latestOfMany()->where('status', 'unpaid');
     }
+
+    public function latestInvoice()
+    {
+        return $this->hasOne(Invoice::class)->latestOfMany();
+    }
 }

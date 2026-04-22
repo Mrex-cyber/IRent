@@ -17,7 +17,27 @@ class MessageInboxController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $inbox = $this->conversationService->getInboxForUser($request->user());
+        $category = $request->query('category');
+        $category = is_string($category) ? trim($category) : null;
+        if ($category === '') {
+            $category = null;
+        }
+
+        $searchFieldText = $request->query('searchFieldText');
+        $searchFieldText = is_string($searchFieldText) ? mb_substr(trim($searchFieldText), 0, 255) : null;
+        if ($searchFieldText === '') {
+            $searchFieldText = null;
+        }
+
+        $tab = $request->query('tab', 'messages');
+        $tab = is_string($tab) && in_array($tab, ['messages', 'groups'], true) ? $tab : 'messages';
+
+        $inbox = $this->conversationService->getInboxForUser(
+            $request->user(),
+            $category,
+            $searchFieldText,
+            $tab,
+        );
 
         return response()->json($inbox);
     }

@@ -103,10 +103,10 @@ const handleRegister = async () => {
     })
 
     await authStore.register(form)
-    router.push('/dashboard')
+    router.push('/management/news')
   } catch (error: any) {
     console.error('Registration failed:', error)
-    
+
     // Handle validation errors
     if (error.message) {
       try {

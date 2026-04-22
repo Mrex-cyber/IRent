@@ -162,7 +162,7 @@
           </div>
           <div class="profile-info">
             <div class="profile-name">{{ user?.firstName }} {{ user?.lastName }}</div>
-            <div class="profile-role">Chairman</div>
+            <div class="profile-role">{{ user?.role ?? 'OSBB Representative' }}</div>
           </div>
         </div>
       </div>
@@ -181,6 +181,10 @@ import mainLogo from '@/assets/images/main_logo.jpg'
 
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
+
+const handleLogout = () => {
+  authStore.logout()
+}
 </script>
 
 <style scoped>
@@ -354,6 +358,29 @@ const user = computed(() => authStore.user)
   font-weight: 400;
   opacity: 0.9;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: calc(100% + 2rem);
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0 0 1rem 1rem;
+  background-color: rgba(0, 0, 0, 0.06);
+  color: #424242;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.logout-button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 @media (max-width: 48rem) {

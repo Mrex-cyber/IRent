@@ -10,15 +10,112 @@ use Illuminate\Support\Collection;
 
 class ConversationService implements ConversationServiceInterface
 {
-    public function getInboxForUser(User $user): array
-    {
-        $conversations = $user->conversations()
-            ->with(['latestMessage.sender', 'participants'])
-            ->withCount('participants')
-            ->orderByDesc('last_message_at')
-            ->get();
+    public function getInboxForUser(
+        User $user,
+        ?string $category = null,
+        ?string $searchFieldText = null,
+        string $tab = 'messages',
+    ): array {
+        $query = Conversation::query()
+            ->whereHas('participants', fn ($q) => $q->where('users.id', $user->id))
+            ->with([
+                'latestMessage.sender',
+                'participants' => fn ($q) => $q->with([
+                    'ownedApartments.entrance.building',
+                    'rentedApartments.entrance.building',
+                ]),
+            ])
+            ->withCount('participants');
 
-        return $conversations->map(fn (Conversation $c) => $this->formatInboxItem($c))->values()->all();
+        if ($tab === 'groups') {
+            $query->where('type', 'group')
+                ->has('participants', '>=', 3);
+        } else {
+            $query->where('type', '!=', 'group');
+        }
+
+        $categoryEnum = $this->categoryEnumFromFilterLabel($category);
+        if ($categoryEnum !== null) {
+            $query->where('category', $categoryEnum);
+        }
+
+        $term = $searchFieldText !== null ? trim($searchFieldText) : '';
+        $like = null;
+        if ($term !== '') {
+            $like = '%'.addcslashes($term, '%_\\').'%';
+            $categoryEnumsForTag = $this->categoryEnumsMatchingSearchTerm($term);
+            $query->where(function ($outer) use ($like, $categoryEnumsForTag) {
+                $outer->where('conversations.subject', 'like', $like)
+                    ->orWhereHas('latestMessage', function ($mq) use ($like) {
+                        $mq->where('body', 'like', $like);
+                    })
+                    ->orWhereHas('latestMessage.sender', function ($q) use ($like) {
+                        $q->where(function ($nameQ) use ($like) {
+                            $nameQ->where('users.first_name', 'like', $like)
+                                ->orWhere('users.last_name', 'like', $like)
+                                ->orWhereRaw("trim(concat_ws(' ', users.first_name, users.last_name)) like ?", [$like]);
+                        });
+                    })
+                    ->orWhere(function ($groupName) use ($like) {
+                        $groupName->where('conversations.type', 'group')
+                            ->whereHas('participants', function ($pq) use ($like) {
+                                $pq->where(function ($nameQ) use ($like) {
+                                    $nameQ->where('users.first_name', 'like', $like)
+                                        ->orWhere('users.last_name', 'like', $like)
+                                        ->orWhereRaw("trim(concat_ws(' ', users.first_name, users.last_name)) like ?", [$like]);
+                                });
+                            });
+                    });
+                if ($categoryEnumsForTag !== []) {
+                    $outer->orWhereIn('conversations.category', $categoryEnumsForTag);
+                }
+            });
+        }
+
+        $conversations = $query->orderByDesc('last_message_at')->get();
+
+        return $conversations->map(fn (Conversation $c) => $this->formatInboxItem($c, $user))->values()->all();
+    }
+
+    private function categoryEnumFromFilterLabel(?string $category): ?string
+    {
+        if ($category === null || $category === '' || strcasecmp($category, 'All') === 0) {
+            return null;
+        }
+
+        return match ($category) {
+            'Suggestions and complaints' => 'suggestions_complaints',
+            'Legal Matter' => 'legal',
+            'Maintenance' => 'maintenance',
+            'Financial' => 'financial',
+            'General' => 'general',
+            default => null,
+        };
+    }
+
+    private function categoryEnumsMatchingSearchTerm(string $term): array
+    {
+        $term = trim($term);
+        if ($term === '') {
+            return [];
+        }
+
+        $map = [
+            'suggestions_complaints' => 'Suggestions and complaints',
+            'legal' => 'Legal Matter',
+            'maintenance' => 'Maintenance',
+            'financial' => 'Financial',
+            'general' => 'General',
+        ];
+
+        $matches = [];
+        foreach ($map as $enum => $label) {
+            if (mb_stripos($label, $term) !== false || mb_stripos($enum, $term) !== false) {
+                $matches[] = $enum;
+            }
+        }
+
+        return $matches;
     }
 
     /**
@@ -170,7 +267,7 @@ class ConversationService implements ConversationServiceInterface
         };
     }
 
-    private function formatInboxItem(Conversation $c): array
+    private function formatInboxItem(Conversation $c, User $viewer): array
     {
         $last = $c->latestMessage;
         $sender = $last?->sender;
@@ -178,6 +275,22 @@ class ConversationService implements ConversationServiceInterface
             ->map(fn ($u) => trim($u->first_name.' '.$u->last_name))
             ->values()
             ->all();
+
+        $building = null;
+        $apartment = null;
+        if (in_array($c->type, ['direct', 'broadcast'], true)) {
+            foreach ($c->participants as $participant) {
+                if ((int) $participant->id === (int) $viewer->id) {
+                    continue;
+                }
+                $apt = $participant->ownedApartments->first() ?? $participant->rentedApartments->first();
+                if ($apt !== null) {
+                    $building = $apt->entrance?->building?->address;
+                    $apartment = $apt->number;
+                    break;
+                }
+            }
+        }
 
         return [
             'id' => $last?->id ?? $c->id,
@@ -191,8 +304,8 @@ class ConversationService implements ConversationServiceInterface
             'content' => $last?->body ?? '',
             'category' => $this->categoryLabel($c->category),
             'date' => $last?->created_at->format('Y-m-d') ?? $c->created_at->format('Y-m-d'),
-            'building' => null,
-            'apartment' => null,
+            'building' => $building,
+            'apartment' => $apartment,
         ];
     }
 }

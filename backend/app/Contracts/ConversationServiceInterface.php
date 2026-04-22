@@ -11,7 +11,12 @@ interface ConversationServiceInterface
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function getInboxForUser(User $user): array;
+    public function getInboxForUser(
+        User $user,
+        ?string $category = null,
+        ?string $searchFieldText = null,
+        string $tab = 'messages',
+    ): array;
 
     /**
      * @return \Illuminate\Support\Collection<int, \App\Models\Message>

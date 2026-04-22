@@ -20,158 +20,185 @@
           </button>
         </div>
 
-        <div class="statistics-cards">
-          <div class="stat-card">
-            <div class="stat-icon blue">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
+        <div v-if="error" class="error-state">{{ error }}</div>
+        <div v-else-if="isLoading" class="loading-state">Loading statistics…</div>
+
+        <template v-else>
+          <div class="statistics-cards">
+            <div class="stat-card">
+              <div class="stat-icon blue">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ statistics.totalRequests }}</div>
+                <div class="stat-label">Total Requests</div>
+                <div
+                  v-if="statistics.totalRequestsTrendPercent !== null"
+                  :class="[
+                    'stat-trend',
+                    statistics.totalRequestsTrendPercent >= 0 ? 'positive' : 'negative'
+                  ]"
+                >
+                  <svg
+                    v-if="statistics.totalRequestsTrendPercent >= 0"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                    <polyline points="17 6 23 6 23 12" />
+                  </svg>
+                  <svg
+                    v-else
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+                    <polyline points="17 18 23 18 23 12" />
+                  </svg>
+                  <span
+                    >{{ statistics.totalRequestsTrendPercent >= 0 ? '+' : ''
+                    }}{{ statistics.totalRequestsTrendPercent }}%</span
+                  >
+                </div>
+              </div>
             </div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.totalRequests }}</div>
-              <div class="stat-label">Total Requests</div>
-              <div class="stat-trend positive">
+
+            <div class="stat-card">
+              <div class="stat-icon green">
                 <svg
-                  width="12"
-                  height="12"
+                  width="32"
+                  height="32"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2"
                 >
-                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                  <polyline points="17 6 23 6 23 12" />
+                  <polyline points="20 6 9 17 4 12" />
                 </svg>
-                <span>12%</span>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ statistics.resolved }}</div>
+                <div class="stat-label">Resolved</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon orange">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ statistics.unresolved }}</div>
+                <div class="stat-label">Unresolved</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon purple">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ statistics.avgResponseTime }}</div>
+                <div class="stat-label">Avg Response Time</div>
               </div>
             </div>
           </div>
 
-          <div class="stat-card">
-            <div class="stat-icon green">
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.resolved }}</div>
-              <div class="stat-label">Resolved</div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon orange">
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-            </div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.unresolved }}</div>
-              <div class="stat-label">Unresolved</div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon purple">
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-            </div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.avgResponseTime }}</div>
-              <div class="stat-label">Avg Response Time</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="staff-workload-section">
-          <h2 class="section-title">Staff Workload</h2>
-          <div class="staff-list">
-            <div v-for="staff in staffMembers" :key="staff.id" class="staff-card">
-              <div class="staff-header-row">
-                <div class="staff-profile">
-                  <div class="staff-avatar">
-                    <span class="avatar-emoji">{{ staff.avatar }}</span>
+          <div class="staff-workload-section">
+            <h2 class="section-title">Staff Workload</h2>
+            <div class="staff-list">
+              <div v-for="staff in staffMembers" :key="staff.id" class="staff-card">
+                <div class="staff-header-row">
+                  <div class="staff-profile">
+                    <div class="staff-avatar">
+                      <span class="avatar-emoji">{{ staff.avatar }}</span>
+                    </div>
+                    <div class="staff-info">
+                      <div class="staff-name">{{ staff.name }}</div>
+                      <div class="staff-role">{{ staff.role }}</div>
+                    </div>
                   </div>
-                  <div class="staff-info">
-                    <div class="staff-name">{{ staff.name }}</div>
-                    <div class="staff-role">{{ staff.role }}</div>
+                  <div class="metrics-header">
+                    <span class="total-value">{{ staff.total }} Total</span>
                   </div>
                 </div>
-                <div class="metrics-header">
-                  <span class="total-value">{{ staff.total }} Total</span>
-                </div>
-              </div>
-              <div class="staff-metrics">
-                <div class="metrics-grid">
-                  <div class="metric-item">
-                    <span class="metric-label">Resolved</span>
-                    <span class="metric-value resolved">{{ staff.resolved }}</span>
+                <div class="staff-metrics">
+                  <div class="metrics-grid">
+                    <div class="metric-item">
+                      <span class="metric-label">Resolved</span>
+                      <span class="metric-value resolved">{{ staff.resolved }}</span>
+                    </div>
+                    <div class="metric-item">
+                      <span class="metric-label">In Progress</span>
+                      <span class="metric-value in-progress">{{ staff.inProgress }}</span>
+                    </div>
+                    <div class="metric-item">
+                      <span class="metric-label">Avg Time</span>
+                      <span class="metric-value avg-time">{{ staff.avgTime }}</span>
+                    </div>
                   </div>
-                  <div class="metric-item">
-                    <span class="metric-label">In Progress</span>
-                    <span class="metric-value in-progress">{{ staff.inProgress }}</span>
+                  <div class="workload-bar-container">
+                    <span class="workload-label">Workload</span>
+                    <div class="workload-bar">
+                      <div
+                        :class="['workload-fill', getWorkloadColorClass(staff.workload)]"
+                        :style="{ width: `${staff.workload}%` }"
+                      ></div>
+                    </div>
+                    <span class="workload-percentage">{{ staff.workload }}%</span>
                   </div>
-                  <div class="metric-item">
-                    <span class="metric-label">Avg Time</span>
-                    <span class="metric-value avg-time">{{ staff.avgTime }}</span>
-                  </div>
-                </div>
-                <div class="workload-bar-container">
-                  <span class="workload-label">Workload</span>
-                  <div class="workload-bar">
-                    <div
-                      :class="['workload-fill', getWorkloadColorClass(staff.workload)]"
-                      :style="{ width: `${staff.workload}%` }"
-                    ></div>
-                  </div>
-                  <span class="workload-percentage">{{ staff.workload }}%</span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </template>
       </div>
     </div>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useAuthStore } from '@/store/auth'
+import { ref, onMounted } from 'vue'
+import apiClient from '@/services/api/client'
 
 interface StaffMember {
   id: number
   name: string
   role: string
-  avatar: string
+  avatar: string | null
   resolved: number
   inProgress: number
   avgTime: string
@@ -179,15 +206,25 @@ interface StaffMember {
   workload: number
 }
 
-const authStore = useAuthStore()
+interface Statistics {
+  totalRequests: number
+  resolved: number
+  unresolved: number
+  avgResponseTime: string
+  totalRequestsTrendPercent: number | null
+}
+
 const selectedPeriod = ref('Week')
 const timePeriods = ['Today', 'Week', 'Month', 'Year']
+const isLoading = ref(false)
+const error = ref<string | null>(null)
 
-const statistics = ref({
-  totalRequests: 487,
-  resolved: 412,
-  unresolved: 75,
-  avgResponseTime: '3.2 hours'
+const statistics = ref<Statistics>({
+  totalRequests: 0,
+  resolved: 0,
+  unresolved: 0,
+  avgResponseTime: 'N/A',
+  totalRequestsTrendPercent: null
 })
 
 const staffMembers = ref<StaffMember[]>([])
@@ -204,57 +241,24 @@ const selectPeriod = (period: string) => {
 }
 
 const fetchTaskStatistics = async (period: string) => {
+  isLoading.value = true
+  error.value = null
   try {
-    const response = await fetch(`/api/tasks/statistics?period=${period}`)
-    if (response.ok) {
-      const data = await response.json()
-      statistics.value = data.statistics
-      staffMembers.value = data.staffMembers
-    } else {
-      loadMockData()
+    const { data } = await apiClient.get(`management/tasks/statistics?period=${period}`)
+    statistics.value = {
+      totalRequests: 0,
+      resolved: 0,
+      unresolved: 0,
+      avgResponseTime: 'N/A',
+      totalRequestsTrendPercent: null,
+      ...data.statistics
     }
-  } catch (error) {
-    console.error('Fetch task statistics error:', error)
-    loadMockData()
+    staffMembers.value = data.staffMembers ?? []
+  } catch (err) {
+    error.value = 'Failed to load task statistics'
+  } finally {
+    isLoading.value = false
   }
-}
-
-const loadMockData = () => {
-  staffMembers.value = [
-    {
-      id: 1,
-      name: 'Tom Smith',
-      role: 'Chairman',
-      avatar: '😊',
-      resolved: 142,
-      inProgress: 14,
-      avgTime: '2.3 hours',
-      total: 156,
-      workload: 85
-    },
-    {
-      id: 2,
-      name: 'Sarah Johnson',
-      role: 'Building Manager',
-      avatar: '👩',
-      resolved: 120,
-      inProgress: 14,
-      avgTime: '3.1 hours',
-      total: 134,
-      workload: 72
-    },
-    {
-      id: 3,
-      name: 'Michael Chen',
-      role: 'Maintenance Coordinator',
-      avatar: '👓',
-      resolved: 95,
-      inProgress: 17,
-      avgTime: '4.2 hours',
-      total: 112,
-      workload: 68
-    }
-  ]
 }
 
 onMounted(() => {
@@ -591,6 +595,18 @@ onMounted(() => {
   min-width: 3rem;
   text-align: right;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.loading-state,
+.error-state {
+  padding: 3rem;
+  text-align: center;
+  color: #757575;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.error-state {
+  color: #f44336;
 }
 
 @media (max-width: 48rem) {

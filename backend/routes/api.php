@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\API\BuildingController;
+use App\Http\Controllers\API\TaskStatisticsController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Management\AnalyticsController;
 use App\Http\Controllers\Management\AnnouncementController;
 use App\Http\Controllers\Management\BroadcastController;
 use App\Http\Controllers\Management\ConversationController;
+use App\Http\Controllers\Management\MembersController;
 use App\Http\Controllers\Management\MessageController;
 use App\Http\Controllers\Management\MessageInboxController;
 use App\Http\Controllers\Management\ProfileController;
@@ -20,10 +24,11 @@ Route::group(['prefix' => 'auth'], function () {
     Route::get('/me', [LoginController::class, 'me']);
 });
 
-Route::prefix('management')->middleware('auth:api')->group(function () {
+Route::prefix('management')->middleware(['auth:api', 'osbb'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index']);
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::get('/settings', [SettingsController::class, 'index']);
+    Route::put('/settings', [SettingsController::class, 'update']);
     Route::get('/announcements', [AnnouncementController::class, 'index']);
     Route::post('/announcements', [AnnouncementController::class, 'store']);
     Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update']);
@@ -37,4 +42,11 @@ Route::prefix('management')->middleware('auth:api')->group(function () {
     Route::post('/messages/{message}/reply', [MessageInboxController::class, 'reply']);
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/broadcasts', [BroadcastController::class, 'store']);
+    Route::get('/members', [MembersController::class, 'index']);
+    Route::get('/members/{user}', [MembersController::class, 'show']);
+    Route::get('/analytics', [AnalyticsController::class, 'index']);
+    Route::get('/buildings', [BuildingController::class, 'index']);
+    Route::get('/buildings/{buildingId}/entrances', [BuildingController::class, 'entrances']);
+    Route::get('/entrances/{entranceId}/apartments', [BuildingController::class, 'apartments']);
+    Route::get('/tasks/statistics', [TaskStatisticsController::class, 'index']);
 });

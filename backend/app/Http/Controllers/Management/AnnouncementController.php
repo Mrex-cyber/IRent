@@ -20,7 +20,23 @@ class AnnouncementController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $announcements = $this->announcementService->listForUser($request->user());
+        $category = $request->query('category');
+        $category = is_string($category) ? trim($category) : null;
+        if ($category === '') {
+            $category = null;
+        }
+
+        $searchFieldText = $request->query('searchFieldText');
+        $searchFieldText = is_string($searchFieldText) ? mb_substr(trim($searchFieldText), 0, 255) : null;
+        if ($searchFieldText === '') {
+            $searchFieldText = null;
+        }
+
+        $announcements = $this->announcementService->listForUser(
+            $request->user(),
+            $category,
+            $searchFieldText,
+        );
 
         return response()->json(AnnouncementResource::collection($announcements)->resolve());
     }

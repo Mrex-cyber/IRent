@@ -22,6 +22,7 @@ class UpdateProfileRequest extends FormRequest
             'phone' => 'sometimes|nullable|string|max:50',
             'email' => 'sometimes|email',
             'address' => 'sometimes|nullable|string|max:500',
+            'bio' => 'sometimes|nullable|string|max:5000',
         ];
     }
 }

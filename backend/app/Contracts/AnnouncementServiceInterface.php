@@ -11,7 +11,7 @@ interface AnnouncementServiceInterface
     /**
      * @return Collection<int, Announcement>
      */
-    public function listForUser(User $user): Collection;
+    public function listForUser(User $user, ?string $category = null, ?string $searchFieldText = null): Collection;
 
     public function create(User $user, array $data): Announcement;
 

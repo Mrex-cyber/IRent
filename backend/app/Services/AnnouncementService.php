@@ -12,12 +12,25 @@ class AnnouncementService implements AnnouncementServiceInterface
     /**
      * @return Collection<int, Announcement>
      */
-    public function listForUser(User $user): Collection
+    public function listForUser(User $user, ?string $category = null, ?string $searchFieldText = null): Collection
     {
-        return Announcement::with('author')
-            ->where('user_id', $user->id)
-            ->latest()
-            ->get();
+        $query = Announcement::with('author')
+            ->where('user_id', $user->id);
+
+        if ($category !== null && $category !== '' && strcasecmp($category, 'All') !== 0) {
+            $query->where('type', strtolower($category));
+        }
+
+        $term = $searchFieldText !== null ? trim($searchFieldText) : '';
+        if ($term !== '') {
+            $like = '%'.addcslashes($term, '%_\\').'%';
+            $query->where(function ($q) use ($like) {
+                $q->where('title', 'like', $like)
+                    ->orWhere('content', 'like', $like);
+            });
+        }
+
+        return $query->latest()->get();
     }
 
     public function create(User $user, array $data): Announcement

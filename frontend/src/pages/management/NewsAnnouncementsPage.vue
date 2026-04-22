@@ -40,7 +40,7 @@
 
         <div class="announcements-list">
           <div
-            v-for="announcement in filteredAnnouncements"
+            v-for="announcement in announcements"
             :key="announcement.id"
             class="announcement-card"
           >
@@ -116,7 +116,7 @@
             </div>
           </div>
 
-          <div v-if="filteredAnnouncements.length === 0" class="empty-state">
+          <div v-if="!isLoading && announcements.length === 0" class="empty-state">
             <p>No announcements found</p>
           </div>
         </div>
@@ -160,7 +160,7 @@
           ></v-textarea>
           <v-select
             v-model="formData.category"
-            :items="categories"
+            :items="formCategories"
             label="Category"
             variant="outlined"
             required
@@ -191,8 +191,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useAuthStore } from '@/store/auth'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import apiClient from '@/services/api/client'
+import SearchField from '@/components/SearchField.vue'
 
 interface Announcement {
   id: number
@@ -209,14 +210,17 @@ interface Announcement {
   }
 }
 
-const authStore = useAuthStore()
 const announcements = ref<Announcement[]>([])
 const searchQuery = ref('')
+const debouncedSearchText = ref('')
 const selectedCategory = ref('All')
 const showDialog = ref(false)
 const editingAnnouncement = ref<Announcement | null>(null)
+const isLoading = ref(false)
+const saveLoading = ref(false)
 
 const categories = ['All', 'General', 'Maintenance', 'Events', 'Financial', 'Safety', 'Updates']
+const formCategories = categories.filter((c) => c !== 'All')
 const statusOptions = ['Draft', 'Scheduled', 'Published']
 
 const formData = ref({
@@ -227,22 +231,19 @@ const formData = ref({
   scheduledAt: ''
 })
 
-const filteredAnnouncements = computed(() => {
-  let filtered = announcements.value
+const SEARCH_DEBOUNCE_MS = 700
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
+const buildListParams = (): Record<string, string> => {
+  const params: Record<string, string> = {}
   if (selectedCategory.value !== 'All') {
-    filtered = filtered.filter((a) => a.category === selectedCategory.value)
+    params.category = selectedCategory.value
   }
-
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(
-      (a) => a.title.toLowerCase().includes(query) || a.content.toLowerCase().includes(query)
-    )
+  if (debouncedSearchText.value !== '') {
+    params.searchFieldText = debouncedSearchText.value
   }
-
-  return filtered
-})
+  return params
+}
 
 const getCategoryClass = (category: string) => {
   const classes: Record<string, string> = {
@@ -271,107 +272,38 @@ const truncateContent = (content: string) => {
 
 const selectCategory = (category: string) => {
   selectedCategory.value = category
-}
-
-const handleSearch = () => {}
-
-const mockAnnouncements: Announcement[] = [
-  {
-    id: 1,
-    title: 'Annual General Meeting - November 2024',
-    content:
-      'Dear residents, we are pleased to announce the Annual General Meeting will be held on November 30th, 2024 at 6:00 PM in the community hall. All apartment owners are encouraged to attend. We will discuss important matters including building maintenance, financial reports, and upcoming projects. Please RSVP by November 25th.',
-    category: 'Events',
-    status: 'Published',
-    publishedAt: '2024-11-15',
-    scheduledAt: null,
-    createdAt: '2024-11-15',
-    author: {
-      id: 1,
-      name: 'Tom Smith'
-    }
-  },
-  {
-    id: 2,
-    title: 'Water System Maintenance - Building A',
-    content:
-      'Please be informed that water supply will be temporarily interrupted in Building A on November 28th from 9:00 AM to 2:00 PM for routine maintenance work. We apologize for any inconvenience and appreciate your understanding. Please store water in advance if needed.',
-    category: 'Maintenance',
-    status: 'Scheduled',
-    publishedAt: null,
-    scheduledAt: '2024-11-27',
-    createdAt: '2024-11-20',
-    author: {
-      id: 1,
-      name: 'Tom Smith'
-    }
-  },
-  {
-    id: 3,
-    title: 'New Parking Regulations',
-    content:
-      'Starting December 1st, new parking regulations will be in effect. All residents must register their vehicles with the management office. Visitor parking will be limited to 2 hours. Please review the complete parking policy document available at the management office.',
-    category: 'General',
-    status: 'Draft',
-    publishedAt: null,
-    scheduledAt: null,
-    createdAt: '2024-11-18',
-    author: {
-      id: 1,
-      name: 'Tom Smith'
-    }
-  },
-  {
-    id: 4,
-    title: 'Holiday Decoration Guidelines',
-    content:
-      'As we approach the holiday season, please review the decoration guidelines for common areas and balconies. All decorations must be fire-resistant and securely attached. Please remove decorations by January 15th. Happy holidays!',
-    category: 'General',
-    status: 'Published',
-    publishedAt: '2024-11-22',
-    scheduledAt: null,
-    createdAt: '2024-11-22',
-    author: {
-      id: 1,
-      name: 'Tom Smith'
-    }
-  },
-  {
-    id: 5,
-    title: 'Financial Report - Q3 2024',
-    content:
-      'The quarterly financial report for Q3 2024 is now available for review. All residents can access the report through the resident portal or request a printed copy from the management office. The report includes budget allocations, maintenance expenses, and reserve fund status.',
-    category: 'Financial',
-    status: 'Published',
-    publishedAt: '2024-11-10',
-    scheduledAt: null,
-    createdAt: '2024-11-10',
-    author: {
-      id: 1,
-      name: 'Tom Smith'
-    }
-  },
-  {
-    id: 6,
-    title: 'Fire Safety Drill - December 5th',
-    content:
-      'A mandatory fire safety drill will be conducted on December 5th at 10:00 AM. All residents are required to participate. Please familiarize yourself with the evacuation routes posted on each floor. Your cooperation ensures the safety of all residents.',
-    category: 'Safety',
-    status: 'Scheduled',
-    publishedAt: null,
-    scheduledAt: '2024-12-05',
-    createdAt: '2024-11-25',
-    author: {
-      id: 1,
-      name: 'Tom Smith'
-    }
+  debouncedSearchText.value = searchQuery.value.trim()
+  if (searchDebounceTimer !== null) {
+    clearTimeout(searchDebounceTimer)
+    searchDebounceTimer = null
   }
-]
+  fetchAnnouncements()
+}
 
 const fetchAnnouncements = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-  announcements.value = [...mockAnnouncements]
+  isLoading.value = true
+  try {
+    const { data } = await apiClient.get<Announcement[]>('management/announcements', {
+      params: buildListParams()
+    })
+    announcements.value = Array.isArray(data) ? data : []
+  } catch {
+    announcements.value = []
+  } finally {
+    isLoading.value = false
+  }
 }
+
+watch(searchQuery, () => {
+  if (searchDebounceTimer !== null) {
+    clearTimeout(searchDebounceTimer)
+  }
+  searchDebounceTimer = setTimeout(() => {
+    searchDebounceTimer = null
+    debouncedSearchText.value = searchQuery.value.trim()
+    fetchAnnouncements()
+  }, SEARCH_DEBOUNCE_MS)
+})
 
 const openCreateDialog = () => {
   editingAnnouncement.value = null
@@ -403,55 +335,53 @@ const closeDialog = () => {
 }
 
 const saveAnnouncement = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 300))
-
-  if (editingAnnouncement.value) {
-    const index = announcements.value.findIndex((a) => a.id === editingAnnouncement.value!.id)
-    if (index !== -1) {
-      announcements.value[index] = {
-        ...announcements.value[index],
-        title: formData.value.title,
-        content: formData.value.content,
-        category: formData.value.category,
-        status: formData.value.status,
-        scheduledAt: formData.value.scheduledAt || null,
-        publishedAt:
-          formData.value.status === 'Published' ? new Date().toISOString().split('T')[0] : null
-      }
-    }
-  } else {
-    const newAnnouncement: Announcement = {
-      id: Math.max(...announcements.value.map((a) => a.id), 0) + 1,
+  saveLoading.value = true
+  try {
+    const payload = {
       title: formData.value.title,
       content: formData.value.content,
       category: formData.value.category,
       status: formData.value.status,
-      publishedAt:
-        formData.value.status === 'Published' ? new Date().toISOString().split('T')[0] : null,
-      scheduledAt: formData.value.scheduledAt || null,
-      createdAt: new Date().toISOString().split('T')[0],
-      author: {
-        id: parseInt(authStore.user?.id || '1'),
-        name: `${authStore.user?.firstName || 'Admin'} ${authStore.user?.lastName || 'User'}`
-      }
+      scheduledAt: formData.value.scheduledAt || null
     }
-    announcements.value.push(newAnnouncement)
-  }
 
-  closeDialog()
+    if (editingAnnouncement.value) {
+      await apiClient.put<Announcement>(
+        `management/announcements/${editingAnnouncement.value.id}`,
+        payload
+      )
+      closeDialog()
+      await fetchAnnouncements()
+    } else {
+      await apiClient.post<Announcement>('management/announcements', payload)
+      closeDialog()
+      await fetchAnnouncements()
+    }
+  } catch {
+  } finally {
+    saveLoading.value = false
+  }
 }
 
 const deleteAnnouncement = async (id: number) => {
   if (!confirm('Are you sure you want to delete this announcement?')) {
     return
   }
-
-  await new Promise((resolve) => setTimeout(resolve, 200))
-  announcements.value = announcements.value.filter((a) => a.id !== id)
+  try {
+    await apiClient.delete(`management/announcements/${id}`)
+    await fetchAnnouncements()
+  } catch {}
 }
 
 onMounted(() => {
   fetchAnnouncements()
+})
+
+onUnmounted(() => {
+  if (searchDebounceTimer !== null) {
+    clearTimeout(searchDebounceTimer)
+    searchDebounceTimer = null
+  }
 })
 </script>
 
