@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use Exception;
 
 class DatabaseTestController extends Controller
 {
@@ -14,20 +14,20 @@ class DatabaseTestController extends Controller
             $pdo = DB::connection()->getPdo();
             $driver = DB::connection()->getDriverName();
             $dbName = DB::connection()->getDatabaseName();
-            
+
             $tables = [];
             if ($driver === 'pgsql') {
                 $result = DB::select('SELECT table_name FROM information_schema.tables WHERE table_schema = ?', ['public']);
-                $tables = array_map(fn($table) => $table->table_name, $result);
+                $tables = array_map(fn ($table) => $table->table_name, $result);
             } elseif ($driver === 'mysql' || $driver === 'mariadb') {
                 $result = DB::select('SHOW TABLES');
-                $key = 'Tables_in_' . $dbName;
-                $tables = array_map(fn($table) => $table->$key, $result);
+                $key = 'Tables_in_'.$dbName;
+                $tables = array_map(fn ($table) => $table->$key, $result);
             } elseif ($driver === 'sqlite') {
                 $result = DB::select("SELECT name FROM sqlite_master WHERE type='table'");
-                $tables = array_map(fn($table) => $table->name, $result);
+                $tables = array_map(fn ($table) => $table->name, $result);
             }
-            
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Database connection successful',
@@ -46,4 +46,3 @@ class DatabaseTestController extends Controller
         }
     }
 }
-

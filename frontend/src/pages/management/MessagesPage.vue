@@ -44,7 +44,7 @@
         </div>
 
         <div class="search-filter-section">
-          <SearchField v-model="searchQuery" placeholder="Search people" />
+          <SearchField v-model="searchQuery" placeholder="Search name, category, or preview" />
 
           <div class="filter-buttons">
             <button
@@ -77,9 +77,12 @@
 
             <div class="messages-list">
               <div
-                v-for="message in filteredMessages"
-                :key="message.id"
-                :class="['message-item', { active: selectedMessage?.id === message.id }]"
+                v-for="message in messages"
+                :key="message.conversation_id"
+                :class="[
+                  'message-item',
+                  { active: selectedMessage?.conversation_id === message.conversation_id }
+                ]"
                 @click="selectMessage(message)"
               >
                 <div class="message-avatar">
@@ -90,11 +93,18 @@
                 </div>
                 <div class="message-content">
                   <div class="message-header">
-                    <span class="message-name">{{ message.senderName }}</span>
+                    <span class="message-name">{{
+                      message.type === 'group'
+                        ? message.subject || participantNamesDisplay(message.participant_names)
+                        : message.senderName
+                    }}</span>
                     <span :class="['message-tag', getTagClass(message.category)]">
                       {{ message.category }}
                     </span>
                   </div>
+                  <p v-if="message.type === 'group'" class="message-participants">
+                    {{ participantNamesDisplay(message.participant_names) }}
+                  </p>
                   <p class="message-snippet">{{ truncateContent(message.content) }}</p>
                   <div class="message-footer">
                     <span class="message-role">{{ message.senderRole }}</span>
@@ -103,8 +113,10 @@
                 </div>
               </div>
 
-              <div v-if="filteredMessages.length === 0" class="empty-list">
-                <p>No messages found</p>
+              <div v-if="!isLoading && messages.length === 0" class="empty-list">
+                <p>
+                  {{ activeTab === 'groups' ? 'No groups yet' : 'No messages found' }}
+                </p>
               </div>
             </div>
           </div>
@@ -121,14 +133,24 @@
                   </div>
                   <div class="conversation-info">
                     <div class="conversation-name-row">
-                      <h3>{{ selectedMessage.senderName }}</h3>
+                      <h3>
+                        {{
+                          selectedMessage.type === 'group'
+                            ? selectedMessage.subject ||
+                              participantNamesDisplay(selectedMessage.participant_names)
+                            : selectedMessage.senderName
+                        }}
+                      </h3>
                       <span :class="['conversation-tag', getTagClass(selectedMessage.category)]">
                         {{ selectedMessage.category }}
                       </span>
                     </div>
                     <p class="conversation-location">
-                      {{ selectedMessage.building || 'Building A' }} -
-                      {{ selectedMessage.apartment || 'A-302' }}
+                      {{
+                        selectedMessage.type === 'group'
+                          ? participantNamesDisplay(selectedMessage.participant_names)
+                          : directConversationLocation(selectedMessage)
+                      }}
                     </p>
                   </div>
                 </div>
@@ -211,32 +233,86 @@
       </div>
     </div>
 
-    <v-dialog v-model="showCreateGroupDialog" max-width="500">
+    <v-dialog
+      v-model="showCreateGroupDialog"
+      max-width="500"
+      @click:outside="closeCreateGroupDialog"
+    >
       <v-card>
         <v-card-title>Create Group Chat</v-card-title>
         <v-card-text>
-          <v-text-field label="Group Name" variant="outlined"></v-text-field>
-          <v-textarea label="Description" variant="outlined" rows="3"></v-textarea>
+          <v-text-field
+            v-model="groupName"
+            label="Group Name"
+            variant="outlined"
+            :disabled="createGroupLoading"
+          ></v-text-field>
+          <v-textarea
+            v-model="groupDescription"
+            label="Description"
+            variant="outlined"
+            rows="3"
+            :disabled="createGroupLoading"
+          ></v-textarea>
+          <v-select
+            v-model="groupParticipantIds"
+            :items="usersForSelect"
+            item-title="name"
+            item-value="id"
+            label="Add members"
+            variant="outlined"
+            multiple
+            chips
+            :disabled="createGroupLoading"
+          ></v-select>
+          <p v-if="groupError" class="dialog-error">{{ groupError }}</p>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn variant="text" @click="showCreateGroupDialog = false">Cancel</v-btn>
-          <v-btn color="primary" @click="createGroup">Create</v-btn>
+          <v-btn variant="text" :disabled="createGroupLoading" @click="closeCreateGroupDialog"
+            >Cancel</v-btn
+          >
+          <v-btn color="primary" :loading="createGroupLoading" @click="createGroup">Create</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="showBroadcastDialog" max-width="500">
+    <v-dialog v-model="showBroadcastDialog" max-width="500" @click:outside="closeBroadcastDialog">
       <v-card>
         <v-card-title>Send Broadcast</v-card-title>
         <v-card-text>
-          <v-text-field label="Subject" variant="outlined"></v-text-field>
-          <v-textarea label="Message" variant="outlined" rows="5"></v-textarea>
+          <v-text-field
+            v-model="broadcastSubject"
+            label="Subject"
+            variant="outlined"
+            :disabled="sendBroadcastLoading"
+          ></v-text-field>
+          <v-textarea
+            v-model="broadcastContent"
+            label="Message"
+            variant="outlined"
+            rows="5"
+            :disabled="sendBroadcastLoading"
+          ></v-textarea>
+          <v-select
+            v-model="broadcastRecipientIds"
+            :items="usersForSelect"
+            item-title="name"
+            item-value="id"
+            label="Recipients"
+            variant="outlined"
+            multiple
+            chips
+            :disabled="sendBroadcastLoading"
+          ></v-select>
+          <p v-if="broadcastError" class="dialog-error">{{ broadcastError }}</p>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn variant="text" @click="showBroadcastDialog = false">Cancel</v-btn>
-          <v-btn color="primary" @click="sendBroadcast">Send</v-btn>
+          <v-btn variant="text" :disabled="sendBroadcastLoading" @click="closeBroadcastDialog"
+            >Cancel</v-btn
+          >
+          <v-btn color="primary" :loading="sendBroadcastLoading" @click="sendBroadcast">Send</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -244,12 +320,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '@/store/auth'
+import apiClient from '@/services/api/client'
 import SearchField from '@/components/SearchField.vue'
 
 interface Message {
   id: number
+  conversation_id: number
+  type: string
+  participant_count: number
+  participant_names: string[]
+  subject?: string
   senderName: string
   senderRole: string
   content: string
@@ -266,8 +348,17 @@ interface ConversationMessage {
   sent: boolean
 }
 
+interface ManagementUser {
+  id: number
+  first_name: string
+  last_name: string
+  email: string
+  name: string
+}
+
 const authStore = useAuthStore()
 const messages = ref<Message[]>([])
+const isLoading = ref(false)
 const selectedMessage = ref<Message | null>(null)
 const conversationMessages = ref<ConversationMessage[]>([])
 const searchQuery = ref('')
@@ -276,6 +367,17 @@ const activeTab = ref<'messages' | 'groups'>('messages')
 const replyText = ref('')
 const showCreateGroupDialog = ref(false)
 const showBroadcastDialog = ref(false)
+const users = ref<ManagementUser[]>([])
+const groupName = ref('')
+const groupDescription = ref('')
+const groupParticipantIds = ref<number[]>([])
+const broadcastSubject = ref('')
+const broadcastContent = ref('')
+const broadcastRecipientIds = ref<number[]>([])
+const createGroupLoading = ref(false)
+const sendBroadcastLoading = ref(false)
+const groupError = ref('')
+const broadcastError = ref('')
 
 const filters = [
   'All',
@@ -286,22 +388,42 @@ const filters = [
   'General'
 ]
 
-const filteredMessages = computed(() => {
-  let filtered = messages.value
+const SEARCH_DEBOUNCE_MS = 700
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+const debouncedSearchText = ref('')
 
-  if (selectedFilter.value !== 'All') {
-    filtered = filtered.filter((m) => m.category === selectedFilter.value)
-  }
-
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(
-      (m) => m.senderName.toLowerCase().includes(query) || m.content.toLowerCase().includes(query)
-    )
-  }
-
-  return filtered
+const usersForSelect = computed(() => {
+  const currentId = authStore.user?.id
+  if (!currentId) return users.value
+  return users.value.filter((u) => u.id !== currentId)
 })
+
+const buildListParams = (): Record<string, string> => {
+  const params: Record<string, string> = {
+    tab: activeTab.value === 'groups' ? 'groups' : 'messages'
+  }
+  if (selectedFilter.value !== 'All') {
+    params.category = selectedFilter.value
+  }
+  if (debouncedSearchText.value !== '') {
+    params.searchFieldText = debouncedSearchText.value
+  }
+  return params
+}
+
+const participantNamesDisplay = (names: string[] | undefined): string => {
+  if (!names?.length) return ''
+  return names.join(', ')
+}
+
+const emDash = '—'
+
+const directConversationLocation = (m: Message): string => {
+  const parts = [m.building, m.apartment].filter(
+    (p) => p != null && String(p).trim() !== ''
+  ) as string[]
+  return parts.length ? parts.join(' · ') : emDash
+}
 
 const getTagClass = (category: string) => {
   const classes: Record<string, string> = {
@@ -358,164 +480,228 @@ const getInitials = (user: any) => {
 
 const selectFilter = (filter: string) => {
   selectedFilter.value = filter
+  debouncedSearchText.value = searchQuery.value.trim()
+  if (searchDebounceTimer !== null) {
+    clearTimeout(searchDebounceTimer)
+    searchDebounceTimer = null
+  }
+  fetchMessages()
 }
-
-const handleSearch = () => {}
 
 const selectMessage = (message: Message) => {
   selectedMessage.value = message
-  fetchConversation(message.id)
+  fetchConversationByConversationId(message.conversation_id)
 }
 
 const fetchMessages = async () => {
+  isLoading.value = true
   try {
-    const response = await fetch('/api/messages')
-    if (response.ok) {
-      messages.value = await response.json()
-    } else {
-      loadMockMessages()
+    const inboxParams = buildListParams()
+    const { data } = await apiClient.get<Message[]>('management/messages', {
+      params: inboxParams
+    })
+    messages.value = data ?? []
+    if (
+      selectedMessage.value &&
+      !messages.value.some((m) => m.conversation_id === selectedMessage.value!.conversation_id)
+    ) {
+      selectedMessage.value = null
+      conversationMessages.value = []
     }
   } catch (error) {
     console.error('Fetch messages error:', error)
-    loadMockMessages()
+    messages.value = []
+  } finally {
+    isLoading.value = false
   }
 }
 
-const fetchConversation = async (messageId: number) => {
+watch(searchQuery, () => {
+  if (searchDebounceTimer !== null) {
+    clearTimeout(searchDebounceTimer)
+  }
+  searchDebounceTimer = setTimeout(() => {
+    searchDebounceTimer = null
+    debouncedSearchText.value = searchQuery.value.trim()
+    fetchMessages()
+  }, SEARCH_DEBOUNCE_MS)
+})
+
+watch(activeTab, () => {
+  debouncedSearchText.value = searchQuery.value.trim()
+  if (searchDebounceTimer !== null) {
+    clearTimeout(searchDebounceTimer)
+    searchDebounceTimer = null
+  }
+  fetchMessages()
+})
+
+interface ConversationApiMessage {
+  id: string
+  content: string
+  senderId: string
+  timestamp: string
+}
+
+const fetchConversationByConversationId = async (conversationId: number) => {
   try {
-    const response = await fetch(`/api/messages/${messageId}/conversation`)
-    if (response.ok) {
-      conversationMessages.value = await response.json()
-    } else {
-      const now = new Date()
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 20)
-      conversationMessages.value = [
-        {
-          id: 1,
-          content:
-            selectedMessage.value?.content ||
-            'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC.',
-          timestamp: selectedMessage.value?.date || new Date().toISOString(),
-          sent: false
-        },
-        {
-          id: 2,
-          content:
-            "Thank you for your message. I've reviewed your request and will get back to you shortly with an update.",
-          timestamp: today.toISOString(),
-          sent: true
-        }
-      ]
-    }
+    const { data } = await apiClient.get<ConversationApiMessage[]>(
+      `management/conversations/${conversationId}/messages`
+    )
+    const currentUserId = String(authStore.user?.id ?? '')
+    conversationMessages.value = (data ?? []).map((m) => ({
+      id: Number(m.id),
+      content: m.content,
+      timestamp: m.timestamp,
+      sent: String(m.senderId) === currentUserId
+    }))
   } catch (error) {
     console.error('Fetch conversation error:', error)
-    const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 20)
-    conversationMessages.value = [
-      {
-        id: 1,
-        content:
-          selectedMessage.value?.content ||
-          'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC.',
-        timestamp: selectedMessage.value?.date || new Date().toISOString(),
-        sent: false
-      },
-      {
-        id: 2,
-        content:
-          "Thank you for your message. I've reviewed your request and will get back to you shortly with an update.",
-        timestamp: today.toISOString(),
-        sent: true
-      }
-    ]
+    conversationMessages.value = []
   }
 }
 
 const sendReply = async () => {
   if (!replyText.value.trim() || !selectedMessage.value) return
 
+  const conversationId = selectedMessage.value.conversation_id
   try {
-    const response = await fetch(`/api/messages/${selectedMessage.value.id}/reply`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        content: replyText.value
-      })
+    await apiClient.post(`management/conversations/${conversationId}/messages`, {
+      content: replyText.value.trim()
     })
-
-    if (response.ok) {
-      replyText.value = ''
-      await fetchConversation(selectedMessage.value.id)
-    }
+    replyText.value = ''
+    await fetchConversationByConversationId(conversationId)
   } catch (error) {
     console.error('Send reply error:', error)
   }
 }
 
-const openCreateGroupDialog = () => {
+const fetchUsers = async () => {
+  try {
+    const { data } = await apiClient.get<ManagementUser[]>('management/users')
+    users.value = data ?? []
+  } catch (error) {
+    console.error('Fetch users error:', error)
+    users.value = []
+  }
+}
+
+const openCreateGroupDialog = async () => {
+  groupError.value = ''
+  groupName.value = ''
+  groupDescription.value = ''
+  groupParticipantIds.value = []
+  if (users.value.length === 0) await fetchUsers()
   showCreateGroupDialog.value = true
 }
 
-const openBroadcastDialog = () => {
+const openBroadcastDialog = async () => {
+  broadcastError.value = ''
+  broadcastSubject.value = ''
+  broadcastContent.value = ''
+  broadcastRecipientIds.value = []
+  if (users.value.length === 0) await fetchUsers()
   showBroadcastDialog.value = true
 }
 
-const createGroup = () => {
-  console.log('Create group')
+const closeCreateGroupDialog = () => {
   showCreateGroupDialog.value = false
+  groupError.value = ''
 }
 
-const sendBroadcast = () => {
-  console.log('Send broadcast')
+const closeBroadcastDialog = () => {
   showBroadcastDialog.value = false
+  broadcastError.value = ''
 }
 
-const loadMockMessages = () => {
-  messages.value = [
-    {
-      id: 1,
-      senderName: 'Tom Smith',
-      senderRole: 'Condominium member',
-      content:
-        'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC.',
-      category: 'Suggestions and complaints',
-      date: '2024-07-01',
-      building: 'Building A',
-      apartment: 'A-302'
-    },
-    {
-      id: 2,
-      senderName: 'Tom Smith',
-      senderRole: 'Condominium member',
-      content:
-        'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC.',
-      category: 'Legal Matter',
-      date: '2024-07-01',
-      building: 'Building A',
-      apartment: 'A-302'
-    },
-    {
-      id: 3,
-      senderName: 'Tom Smith',
-      senderRole: 'Condominium member',
-      content:
-        'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC.',
-      category: 'Suggestions and complaints',
-      date: '2024-07-01',
-      building: 'Building A',
-      apartment: 'A-302'
-    }
-  ]
+const createGroup = async () => {
+  const name = groupName.value.trim()
+  if (!name) {
+    groupError.value = 'Group name is required.'
+    return
+  }
+  if (groupParticipantIds.value.length === 0) {
+    groupError.value = 'Select at least one member.'
+    return
+  }
+  groupError.value = ''
+  createGroupLoading.value = true
+  try {
+    await apiClient.post('management/conversations', {
+      name,
+      description: groupDescription.value.trim() || undefined,
+      type: 'group',
+      participant_ids: groupParticipantIds.value
+    })
+    await fetchMessages()
+    closeCreateGroupDialog()
+  } catch (error: unknown) {
+    const msg =
+      error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : null
+    groupError.value = msg || 'Failed to create group.'
+  } finally {
+    createGroupLoading.value = false
+  }
+}
+
+const sendBroadcast = async () => {
+  const subject = broadcastSubject.value.trim()
+  const content = broadcastContent.value.trim()
+  if (!subject) {
+    broadcastError.value = 'Subject is required.'
+    return
+  }
+  if (!content) {
+    broadcastError.value = 'Message is required.'
+    return
+  }
+  if (broadcastRecipientIds.value.length === 0) {
+    broadcastError.value = 'Select at least one recipient.'
+    return
+  }
+  broadcastError.value = ''
+  sendBroadcastLoading.value = true
+  try {
+    await apiClient.post('management/broadcasts', {
+      subject,
+      content,
+      recipient_ids: broadcastRecipientIds.value
+    })
+    await fetchMessages()
+    closeBroadcastDialog()
+  } catch (error: unknown) {
+    const msg =
+      error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : null
+    broadcastError.value = msg || 'Failed to send broadcast.'
+  } finally {
+    sendBroadcastLoading.value = false
+  }
 }
 
 onMounted(() => {
   fetchMessages()
 })
+
+onUnmounted(() => {
+  if (searchDebounceTimer !== null) {
+    clearTimeout(searchDebounceTimer)
+    searchDebounceTimer = null
+  }
+})
 </script>
 
 <style scoped>
+.dialog-error {
+  color: #b00020;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
 .messages-page {
   min-height: 100vh;
   background-color: #f5f5f5;
@@ -757,6 +943,13 @@ onMounted(() => {
   color: #374151;
 }
 
+.message-participants {
+  font-size: 0.75rem;
+  color: #757575;
+  margin: 0.25rem 0 0 0;
+  line-height: 1.4;
+}
+
 .message-snippet {
   font-size: 0.875rem;
   color: #616161;
@@ -930,8 +1123,9 @@ onMounted(() => {
 }
 
 .sent-bubble {
-  background-color: #204ef6;
+  background-color: #1976d2;
   color: #ffffff;
+  box-shadow: 0 1px 2px rgba(25, 118, 210, 0.25);
 }
 
 .message-meta {
@@ -964,7 +1158,7 @@ onMounted(() => {
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background-color: #204ef6;
+  background-color: #1976d2;
   color: #ffffff;
   display: flex;
   align-items: center;

@@ -25,6 +25,7 @@ frontend/.DS_Store
 # IDE
 .idea/
 .vscode/
+.cursor/
 .fleet/
 .nova/
 .zed/

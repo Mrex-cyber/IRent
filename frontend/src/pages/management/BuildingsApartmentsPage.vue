@@ -9,240 +9,257 @@
           </div>
         </div>
 
-        <div class="building-tabs">
-          <button
-            v-for="building in buildings"
-            :key="building.id"
-            :class="['building-tab', { active: selectedBuilding?.id === building.id }]"
-            @click="selectBuilding(building)"
-          >
-            {{ building.name }}
-          </button>
-        </div>
+        <div v-if="error" class="error-state">{{ error }}</div>
+        <div v-else-if="isLoading" class="loading-state">Loading buildings…</div>
 
-        <div class="panels-layout">
-          <div class="panel left-panel">
-            <h3 class="panel-title">Entrances</h3>
-            <div class="entrances-list">
-              <div
-                v-for="entrance in entrances"
-                :key="entrance.id"
-                :class="['entrance-item', { active: selectedEntrance?.id === entrance.id }]"
-                @click="selectEntrance(entrance)"
-              >
-                <span class="entrance-name">{{ entrance.name }}</span>
-                <div class="entrance-info">
-                  <span class="entrance-count">{{ entrance.apartmentCount }}</span>
+        <template v-else>
+          <div class="building-tabs">
+            <button
+              v-for="building in buildings"
+              :key="building.id"
+              :class="['building-tab', { active: selectedBuilding?.id === building.id }]"
+              @click="selectBuilding(building)"
+            >
+              {{ building.name }}
+            </button>
+          </div>
+
+          <div class="panels-layout">
+            <div class="panel left-panel">
+              <h3 class="panel-title">Entrances</h3>
+              <div class="entrances-list">
+                <div
+                  v-for="entrance in entrances"
+                  :key="entrance.id"
+                  :class="['entrance-item', { active: selectedEntrance?.id === entrance.id }]"
+                  @click="selectEntrance(entrance)"
+                >
+                  <span class="entrance-name">{{ entrance.name }}</span>
+                  <div class="entrance-info">
+                    <span class="entrance-count">{{ entrance.apartmentCount }}</span>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </div>
+                </div>
+                <div v-if="entrances.length === 0" class="empty-state">
+                  <p>No entrances found</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel middle-panel">
+              <h3 class="panel-title">
+                {{
+                  selectedEntrance ? `${selectedEntrance.name} - Apartments` : 'Select an entrance'
+                }}
+              </h3>
+              <div v-if="selectedEntrance" class="apartments-grid">
+                <div
+                  v-for="apartment in apartments"
+                  :key="apartment.id"
+                  :class="['apartment-card', { active: selectedApartment?.id === apartment.id }]"
+                  @click="selectApartment(apartment)"
+                >
+                  <div class="apartment-card-header">
+                    <div class="apartment-number-large">{{ apartment.number }}</div>
+                    <div class="apartment-floor">Floor {{ apartment.floor }}</div>
+                  </div>
+                  <div v-if="apartment.pendingCount > 0" class="apartment-pending">
+                    {{ apartment.pendingCount }} pending
+                  </div>
+                </div>
+                <div v-if="apartments.length === 0" class="empty-state">
+                  <p>No apartments found</p>
+                </div>
+              </div>
+              <div v-else class="empty-state">
+                <p>Select an entrance to view apartments</p>
+              </div>
+            </div>
+
+            <div class="panel right-panel">
+              <div v-if="selectedApartment" class="apartment-details-view">
+                <div class="info-section-card apartment-header-card">
+                  <div class="apartment-header">
+                    <h3 class="apartment-title">Apartment {{ selectedApartment.number }}</h3>
+                    <span class="apartment-floor-badge">Floor {{ selectedApartment.floor }}</span>
+                  </div>
+                </div>
+
+                <div class="info-section-card">
                   <svg
-                    width="16"
-                    height="16"
+                    width="20"
+                    height="20"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    class="info-section-avatar"
                   >
-                    <polyline points="9 18 15 12 9 6" />
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
                   </svg>
-                </div>
-              </div>
-              <div v-if="entrances.length === 0" class="empty-state">
-                <p>No entrances found</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="panel middle-panel">
-            <h3 class="panel-title">
-              {{
-                selectedEntrance ? `${selectedEntrance.name} - Apartments` : 'Select an entrance'
-              }}
-            </h3>
-            <div v-if="selectedEntrance" class="apartments-grid">
-              <div
-                v-for="apartment in apartments"
-                :key="apartment.id"
-                :class="['apartment-card', { active: selectedApartment?.id === apartment.id }]"
-                @click="selectApartment(apartment)"
-              >
-                <div class="apartment-card-header">
-                  <div class="apartment-number-large">{{ apartment.number }}</div>
-                  <div class="apartment-floor">Floor {{ apartment.floor }}</div>
-                </div>
-                <div v-if="apartment.pendingCount > 0" class="apartment-pending">
-                  {{ apartment.pendingCount }} pending
-                </div>
-              </div>
-              <div v-if="apartments.length === 0" class="empty-state">
-                <p>No apartments found</p>
-              </div>
-            </div>
-            <div v-else class="empty-state">
-              <p>Select an entrance to view apartments</p>
-            </div>
-          </div>
-
-          <div class="panel right-panel">
-            <div v-if="selectedApartment" class="apartment-details-view">
-              <div class="info-section-card apartment-header-card">
-                <div class="apartment-header">
-                  <h3 class="apartment-title">Apartment {{ selectedApartment.number }}</h3>
-                  <span class="apartment-floor-badge">Floor {{ selectedApartment.floor }}</span>
-                </div>
-              </div>
-
-              <div class="info-section-card">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  class="info-section-avatar"
-                >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-                <div class="info-section-right">
-                  <div class="info-section-header">
-                    <h4 class="info-section-title">Owner</h4>
-                  </div>
-                  <div class="info-section-content">
-                    <div class="owner-name">{{ selectedApartment.ownerName || 'John Smith' }}</div>
-                    <div class="owner-contact">
-                      <span>{{ selectedApartment.ownerPhone || '+38 099 999 99 99' }}</span>
+                  <div class="info-section-right">
+                    <div class="info-section-header">
+                      <h4 class="info-section-title">Owner</h4>
                     </div>
-                    <div class="owner-contact">
-                      <span>{{ selectedApartment.ownerEmail || 'owner@example.com' }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="info-section-card">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  class="info-section-avatar"
-                >
-                  <path
-                    d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
-                  />
-                </svg>
-                <div class="info-section-right">
-                  <div class="info-section-header">
-                    <h4 class="info-section-title">Requests</h4>
-                  </div>
-                  <div class="requests-stats">
-                    <div class="stat-box total">
-                      <div class="stat-value">{{ selectedApartment.requestsTotal || 12 }}</div>
-                      <div class="stat-label">Total</div>
-                    </div>
-                    <div class="stat-box pending">
-                      <div class="stat-value">{{ selectedApartment.requestsPending || 3 }}</div>
-                      <div class="stat-label">Pending</div>
-                    </div>
-                    <div class="stat-box resolved">
-                      <div class="stat-value">{{ selectedApartment.requestsResolved || 1 }}</div>
-                      <div class="stat-label">Resolved</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="info-section-card">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  class="info-section-avatar"
-                >
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                </svg>
-                <div class="info-section-right">
-                  <div class="info-section-header">
-                    <h4 class="info-section-title">Utility Meters</h4>
-                  </div>
-                  <div class="utility-meters">
-                    <div class="utility-item">
-                      <span class="utility-label">Water:</span>
-                      <span class="utility-value"
-                        >{{ selectedApartment.waterMeter || '2.3' }}m³</span
-                      >
-                    </div>
-                    <div class="utility-item">
-                      <span class="utility-label">Electricity:</span>
-                      <span class="utility-value"
-                        >{{ selectedApartment.electricityMeter || '224.4' }} kWh</span
-                      >
-                    </div>
-                    <div class="utility-item">
-                      <span class="utility-label">Gas:</span>
-                      <span class="utility-value">{{ selectedApartment.gasMeter || '7.5' }}m³</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="info-section-card">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  class="info-section-avatar"
-                >
-                  <line x1="12" y1="1" x2="12" y2="23" />
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-                <div class="info-section-right">
-                  <div class="info-section-header">
-                    <h4 class="info-section-title">Billing Status</h4>
-                  </div>
-                  <div class="billing-content">
-                    <div class="billing-details">
-                      <div class="billing-item">
-                        <span class="billing-label">Amount:</span>
-                        <span class="billing-value"
-                          >${{ selectedApartment.billingAmount || '101' }}</span
-                        >
+                    <div class="info-section-content">
+                      <div class="owner-name">
+                        {{ displayOptional(selectedApartment.ownerName) }}
                       </div>
-                      <div class="billing-item">
-                        <span class="billing-label">Due Date:</span>
-                        <span class="billing-value">{{
-                          selectedApartment.dueDate || '2024-12-01'
+                      <div class="owner-contact">
+                        <span>{{ displayOptional(selectedApartment.ownerPhone) }}</span>
+                      </div>
+                      <div class="owner-contact">
+                        <span>{{ displayOptional(selectedApartment.ownerEmail) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="info-section-card">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="info-section-avatar"
+                  >
+                    <path
+                      d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+                    />
+                  </svg>
+                  <div class="info-section-right">
+                    <div class="info-section-header">
+                      <h4 class="info-section-title">Requests</h4>
+                    </div>
+                    <div class="requests-stats">
+                      <div class="stat-box total">
+                        <div class="stat-value">{{ selectedApartment.requestsTotal ?? 0 }}</div>
+                        <div class="stat-label">Total</div>
+                      </div>
+                      <div class="stat-box pending">
+                        <div class="stat-value">{{ selectedApartment.requestsPending ?? 0 }}</div>
+                        <div class="stat-label">Pending</div>
+                      </div>
+                      <div class="stat-box resolved">
+                        <div class="stat-value">{{ selectedApartment.requestsResolved ?? 0 }}</div>
+                        <div class="stat-label">Resolved</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="info-section-card">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="info-section-avatar"
+                  >
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                  </svg>
+                  <div class="info-section-right">
+                    <div class="info-section-header">
+                      <h4 class="info-section-title">Utility Meters</h4>
+                    </div>
+                    <div class="utility-meters">
+                      <div class="utility-item">
+                        <span class="utility-label">Water:</span>
+                        <span class="utility-value">{{
+                          meterReading(selectedApartment.waterMeter, 'm³')
+                        }}</span>
+                      </div>
+                      <div class="utility-item">
+                        <span class="utility-label">Electricity:</span>
+                        <span class="utility-value">{{
+                          meterReading(selectedApartment.electricityMeter, 'kWh')
+                        }}</span>
+                      </div>
+                      <div class="utility-item">
+                        <span class="utility-label">Gas:</span>
+                        <span class="utility-value">{{
+                          meterReading(selectedApartment.gasMeter, 'm³')
                         }}</span>
                       </div>
                     </div>
                   </div>
-                  <span class="paid-tag">Paid</span>
+                </div>
+
+                <div class="info-section-card">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="info-section-avatar"
+                  >
+                    <line x1="12" y1="1" x2="12" y2="23" />
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                  <div class="info-section-right">
+                    <div class="info-section-header">
+                      <h4 class="info-section-title">Billing Status</h4>
+                    </div>
+                    <div class="billing-content">
+                      <div class="billing-details">
+                        <div class="billing-item">
+                          <span class="billing-label">Amount:</span>
+                          <span class="billing-value">{{
+                            billingAmountDisplay(selectedApartment)
+                          }}</span>
+                        </div>
+                        <div class="billing-item">
+                          <span class="billing-label">Due Date:</span>
+                          <span class="billing-value">{{
+                            displayOptional(selectedApartment.dueDate)
+                          }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <span
+                      v-if="billingStatusLabel(selectedApartment.billingStatus)"
+                      :class="[
+                        'billing-status-tag',
+                        billingStatusClass(selectedApartment.billingStatus)
+                      ]"
+                    >
+                      {{ billingStatusLabel(selectedApartment.billingStatus) }}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div v-else class="empty-state">
-              <p>Select an apartment to view details</p>
+              <div v-else class="empty-state">
+                <p>Select an apartment to view details</p>
+              </div>
             </div>
           </div>
-        </div>
+        </template>
       </div>
     </div>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useAuthStore } from '@/store/auth'
+import { ref, onMounted } from 'vue'
+import apiClient from '@/services/api/client'
 
 interface Building {
   id: number
@@ -281,15 +298,53 @@ interface Apartment {
   gasMeter?: string
   billingAmount?: number
   dueDate?: string
+  billingStatus?: string | null
 }
 
-const authStore = useAuthStore()
 const buildings = ref<Building[]>([])
 const selectedBuilding = ref<Building | null>(null)
 const entrances = ref<Entrance[]>([])
 const selectedEntrance = ref<Entrance | null>(null)
 const apartments = ref<Apartment[]>([])
 const selectedApartment = ref<Apartment | null>(null)
+const isLoading = ref(false)
+const error = ref<string | null>(null)
+
+const emDash = '—'
+
+const displayOptional = (v: string | number | null | undefined): string => {
+  if (v === null || v === undefined) return emDash
+  const s = String(v).trim()
+  return s === '' ? emDash : s
+}
+
+const meterReading = (v: string | number | null | undefined, unit: string): string => {
+  if (v === null || v === undefined || String(v).trim() === '') return emDash
+  return `${v} ${unit}`
+}
+
+const billingAmountDisplay = (apt: Apartment): string => {
+  if (apt.billingAmount === null || apt.billingAmount === undefined) return emDash
+  return `$${Number(apt.billingAmount).toFixed(2)}`
+}
+
+const billingStatusLabel = (s: string | null | undefined): string | null => {
+  if (!s) return null
+  const key = s.toLowerCase()
+  const map: Record<string, string> = {
+    paid: 'Paid',
+    unpaid: 'Unpaid',
+    overdue: 'Overdue'
+  }
+  return map[key] ?? s
+}
+
+const billingStatusClass = (s: string | null | undefined): string => {
+  const key = (s ?? '').toLowerCase()
+  if (key === 'paid') return 'billing-status-tag--paid'
+  if (key === 'unpaid' || key === 'overdue') return 'billing-status-tag--due'
+  return 'billing-status-tag--neutral'
+}
 
 const selectBuilding = (building: Building) => {
   selectedBuilding.value = building
@@ -309,312 +364,39 @@ const selectApartment = (apartment: Apartment) => {
 }
 
 const fetchBuildings = async () => {
+  isLoading.value = true
+  error.value = null
   try {
-    const response = await fetch('/api/buildings')
-    if (response.ok) {
-      buildings.value = await response.json()
-      if (buildings.value.length > 0 && !selectedBuilding.value) {
-        selectBuilding(buildings.value[0])
-      }
-    } else {
-      loadMockBuildings()
+    const { data } = await apiClient.get<Building[]>('management/buildings')
+    buildings.value = data
+    if (buildings.value.length > 0 && !selectedBuilding.value) {
+      selectBuilding(buildings.value[0])
     }
-  } catch (error) {
-    console.error('Fetch buildings error:', error)
-    loadMockBuildings()
+  } catch {
+    error.value = 'Failed to load buildings'
+  } finally {
+    isLoading.value = false
   }
 }
 
 const fetchEntrances = async (buildingId: number) => {
   try {
-    const response = await fetch(`/api/buildings/${buildingId}/entrances`)
-    if (response.ok) {
-      entrances.value = await response.json()
-    } else {
-      loadMockEntrances(buildingId)
-    }
-  } catch (error) {
-    console.error('Fetch entrances error:', error)
-    loadMockEntrances(buildingId)
+    const { data } = await apiClient.get<Entrance[]>(`management/buildings/${buildingId}/entrances`)
+    entrances.value = data
+  } catch {
+    entrances.value = []
   }
 }
 
 const fetchApartments = async (entranceId: number) => {
   try {
-    const response = await fetch(`/api/entrances/${entranceId}/apartments`)
-    if (response.ok) {
-      apartments.value = await response.json()
-    } else {
-      loadMockApartments(entranceId)
-    }
-  } catch (error) {
-    console.error('Fetch apartments error:', error)
-    loadMockApartments(entranceId)
+    const { data } = await apiClient.get<Apartment[]>(
+      `management/entrances/${entranceId}/apartments`
+    )
+    apartments.value = data
+  } catch {
+    apartments.value = []
   }
-}
-
-const loadMockBuildings = () => {
-  buildings.value = [
-    { id: 1, name: 'Building A' },
-    { id: 2, name: 'Building B' },
-    { id: 3, name: 'Building C' }
-  ]
-  if (buildings.value.length > 0) {
-    selectBuilding(buildings.value[0])
-  }
-}
-
-const loadMockEntrances = (buildingId: number) => {
-  entrances.value = [
-    { id: 1, name: 'Entrance 1', buildingId, apartmentCount: 12 },
-    { id: 2, name: 'Entrance 2', buildingId, apartmentCount: 12 },
-    { id: 3, name: 'Entrance 3', buildingId, apartmentCount: 12 },
-    { id: 4, name: 'Entrance 4', buildingId, apartmentCount: 12 }
-  ]
-}
-
-const loadMockApartments = (entranceId: number) => {
-  apartments.value = [
-    {
-      id: 1,
-      number: 'A-101',
-      type: '2BR',
-      size: 75,
-      bedrooms: 2,
-      bathrooms: 1,
-      status: 'Occupied',
-      floor: 1,
-      owner: 'John Doe',
-      tenant: 'Jane Smith',
-      amenities: ['Balcony', 'Parking'],
-      entranceId,
-      pendingCount: 2,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 2,
-      number: 'A-102',
-      type: '1BR',
-      size: 50,
-      bedrooms: 1,
-      bathrooms: 1,
-      status: 'Available',
-      floor: 1,
-      owner: 'John Doe',
-      amenities: ['Parking'],
-      entranceId,
-      pendingCount: 2,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 3,
-      number: 'A-103',
-      type: '2BR',
-      size: 75,
-      bedrooms: 2,
-      bathrooms: 1,
-      status: 'Occupied',
-      floor: 1,
-      owner: 'John Doe',
-      tenant: 'Jane Smith',
-      amenities: ['Balcony', 'Parking'],
-      entranceId,
-      pendingCount: 2,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 4,
-      number: 'A-104',
-      type: '2BR',
-      size: 75,
-      bedrooms: 2,
-      bathrooms: 1,
-      status: 'Occupied',
-      floor: 2,
-      owner: 'John Doe',
-      tenant: 'Jane Smith',
-      amenities: ['Balcony', 'Parking'],
-      entranceId,
-      pendingCount: 3,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 5,
-      number: 'A-105',
-      type: '1BR',
-      size: 50,
-      bedrooms: 1,
-      bathrooms: 1,
-      status: 'Available',
-      floor: 2,
-      owner: 'John Doe',
-      amenities: ['Parking'],
-      entranceId,
-      pendingCount: 3,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 6,
-      number: 'A-106',
-      type: '2BR',
-      size: 75,
-      bedrooms: 2,
-      bathrooms: 1,
-      status: 'Occupied',
-      floor: 2,
-      owner: 'John Doe',
-      tenant: 'Jane Smith',
-      amenities: ['Balcony', 'Parking'],
-      entranceId,
-      pendingCount: 3,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 7,
-      number: 'A-107',
-      type: '2BR',
-      size: 75,
-      bedrooms: 2,
-      bathrooms: 1,
-      status: 'Occupied',
-      floor: 3,
-      owner: 'John Doe',
-      tenant: 'Jane Smith',
-      amenities: ['Balcony', 'Parking'],
-      entranceId,
-      pendingCount: 2,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 8,
-      number: 'A-108',
-      type: '1BR',
-      size: 50,
-      bedrooms: 1,
-      bathrooms: 1,
-      status: 'Available',
-      floor: 3,
-      owner: 'John Doe',
-      amenities: ['Parking'],
-      entranceId,
-      pendingCount: 2,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    },
-    {
-      id: 9,
-      number: 'A-109',
-      type: '3BR',
-      size: 100,
-      bedrooms: 3,
-      bathrooms: 2,
-      status: 'Occupied',
-      floor: 3,
-      owner: 'Mary Johnson',
-      tenant: 'Robert Brown',
-      amenities: ['Balcony', 'Parking', 'Storage'],
-      entranceId,
-      pendingCount: 0,
-      ownerName: 'John Smith',
-      ownerPhone: '+38 099 999 99 99',
-      ownerEmail: 'owner@example.com',
-      requestsTotal: 12,
-      requestsPending: 3,
-      requestsResolved: 1,
-      waterMeter: '2.3',
-      electricityMeter: '224.4',
-      gasMeter: '7.5',
-      billingAmount: 101,
-      dueDate: '2024-12-01'
-    }
-  ]
-}
-
-const editApartment = () => {
-  console.log('Edit apartment', selectedApartment.value)
-}
-
-const viewHistory = () => {
-  console.log('View history', selectedApartment.value)
 }
 
 onMounted(() => {
@@ -1029,10 +811,8 @@ onMounted(() => {
   color: #212121;
 }
 
-.paid-tag {
+.billing-status-tag {
   padding: 0.5rem 1rem;
-  background-color: #dcfce7;
-  color: #166534;
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -1040,6 +820,21 @@ onMounted(() => {
   display: inline-block;
   width: fit-content;
   align-self: flex-start;
+}
+
+.billing-status-tag--paid {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.billing-status-tag--due {
+  background-color: #ffedd5;
+  color: #9a3412;
+}
+
+.billing-status-tag--neutral {
+  background-color: #f3f4f6;
+  color: #374151;
 }
 
 .detail-section {
@@ -1152,6 +947,18 @@ onMounted(() => {
 
 .action-button.secondary:hover {
   background-color: #bdbdbd;
+}
+
+.loading-state,
+.error-state {
+  padding: 3rem;
+  text-align: center;
+  color: #757575;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.error-state {
+  color: #f44336;
 }
 
 @media (max-width: 75rem) {

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { apiBaseUrl } from '@/config/env'
 import type { User, LoginCredentials, RegisterData } from '@/types/auth'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -24,27 +25,44 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const isAuthenticated = computed(() => !!token.value && !!user.value)
-  const isAdmin = computed(() => user.value?.role === 'Admin')
+  const isAdmin = computed(
+    () => user.value?.role === 'Admin' || user.value?.role === 'OSBBRepresentative'
+  )
 
   const login = async (credentials: LoginCredentials) => {
     isLoading.value = true
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${apiBaseUrl}/auth/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
         },
         body: JSON.stringify(credentials)
       })
 
+      const data = await response.json().catch(() => ({}))
       if (!response.ok) {
-        throw new Error('Login failed')
+        const message =
+          response.status === 401
+            ? data.error || 'Invalid email or password'
+            : data.message || 'Login failed'
+        throw new Error(message)
       }
 
-      const data = await response.json()
-      token.value = data.token
-      user.value = data.user
-      localStorage.setItem('token', data.token)
+      const jwtToken = data.access_token ?? data.token
+      const rawUser = data.user ?? {}
+      token.value = jwtToken
+      user.value = {
+        id: String(rawUser.id ?? ''),
+        email: rawUser.email ?? '',
+        firstName: rawUser.first_name ?? rawUser.firstName ?? '',
+        lastName: rawUser.last_name ?? rawUser.lastName ?? '',
+        role: rawUser.role ?? 'Tenant',
+        createdAt: rawUser.created_at ?? new Date().toISOString(),
+        updatedAt: rawUser.updated_at ?? new Date().toISOString()
+      }
+      localStorage.setItem('token', jwtToken)
     } catch (error) {
       console.error('Login error:', error)
       throw error
@@ -66,10 +84,11 @@ export const useAuthStore = defineStore('auth', () => {
         role: userData.role
       }
 
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(`${apiBaseUrl}/auth/register`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
         },
         body: JSON.stringify(payload)
       })
@@ -103,17 +122,29 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch(`${apiBaseUrl}/auth/logout`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+          Accept: 'application/json'
+        }
+      })
+    } catch {
+      // ignore
+    }
     user.value = null
     token.value = null
     localStorage.removeItem('token')
+    window.location.href = '/auth/login'
   }
 
   const fetchUser = async () => {
     if (!token.value) return
 
     try {
-      const response = await fetch('/api/auth/me', {
+      const response = await fetch(`${apiBaseUrl}/auth/me`, {
         headers: {
           Authorization: `Bearer ${token.value}`
         }
